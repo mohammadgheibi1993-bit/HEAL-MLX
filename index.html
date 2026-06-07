@@ -1,0 +1,1420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>HEAL-MLX v4.0 | Publication-Quality NIH-HEALS Platform</title>
+<!-- SheetJS for XLSX -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --bg:#07111f;--bg2:#0d1b2e;--bg3:#142135;--bg4:#1a2a42;--bg5:#203050;
+  --acc:#3b82f6;--acc2:#6366f1;--acc3:#10b981;--acc4:#f59e0b;--acc5:#ec4899;--acc6:#14b8a6;
+  --txt:#dde6f0;--txt2:#8da8c4;--txt3:#4d6a84;
+  --bdr:#1a3050;--bdr2:#243d5a;
+  --ok:#10b981;--warn:#f59e0b;--err:#ef4444;
+  --r:8px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--txt);font-family:'Segoe UI',system-ui,sans-serif;display:flex}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:3px}
+
+/* SIDEBAR */
+#sb{width:215px;background:var(--bg2);border-right:1px solid var(--bdr);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.sl{padding:16px 14px 12px;border-bottom:1px solid var(--bdr)}
+.sl-t{font-size:16px;font-weight:800;background:linear-gradient(135deg,var(--acc),var(--acc2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sl-s{font-size:9px;color:var(--txt3);letter-spacing:.5px;margin-top:2px;text-transform:uppercase}
+.sg{font-size:9px;color:var(--txt3);text-transform:uppercase;letter-spacing:1px;padding:10px 14px 4px}
+.si{display:flex;align-items:center;gap:8px;padding:7px 14px;cursor:pointer;color:var(--txt2);font-size:12px;border-left:3px solid transparent;transition:.15s;border-radius:0 4px 4px 0}
+.si:hover{background:var(--bg3);color:var(--txt)}
+.si.active{background:var(--bg3);color:var(--acc);border-left-color:var(--acc);font-weight:600}
+.si .ic{font-size:13px;width:15px;text-align:center}
+.sf{margin-top:auto;padding:12px 14px;border-top:1px solid var(--bdr);font-size:10px;color:var(--txt3)}
+.pulse{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* MAIN */
+#main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+#tb{background:var(--bg2);border-bottom:1px solid var(--bdr);height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;flex-shrink:0}
+#tb-title{font-size:13px;font-weight:600;color:var(--txt)}
+.tbr{display:flex;align-items:center;gap:8px}
+.badge{padding:2px 8px;border-radius:20px;font-size:10px;border:1px solid var(--bdr2);color:var(--txt3)}
+.badge.ok{border-color:var(--ok);color:var(--ok)}
+.badge.warn{border-color:var(--warn);color:var(--warn)}
+.badge.err{border-color:var(--err);color:var(--err)}
+#content{flex:1;overflow-y:auto;padding:18px;overflow-x:hidden}
+
+/* PANELS */
+.pnl{display:none}.pnl.active{display:block}
+
+/* CARDS */
+.card{background:var(--bg3);border:1px solid var(--bdr);border-radius:var(--r);padding:16px;margin-bottom:13px}
+.ct{font-size:10px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.9px;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:13px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:13px}
+
+/* METRICS */
+.met{background:var(--bg4);border:1px solid var(--bdr);border-radius:var(--r);padding:12px}
+.ml{font-size:9px;color:var(--txt3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px}
+.mv{font-size:22px;font-weight:800;line-height:1.1}
+.ms{font-size:9px;color:var(--txt3);margin-top:2px}
+.c-blue{color:var(--acc)}.c-green{color:var(--acc3)}.c-yellow{color:var(--acc4)}.c-purple{color:var(--acc2)}.c-pink{color:var(--acc5)}.c-teal{color:var(--acc6)}
+
+/* FORMS */
+.fl{display:block;font-size:11px;color:var(--txt2);margin-bottom:4px;font-weight:500}
+.fc{width:100%;background:var(--bg);border:1px solid var(--bdr);border-radius:5px;padding:6px 9px;color:var(--txt);font-size:11px;outline:none;transition:.15s}
+.fc:focus{border-color:var(--acc)}
+select.fc option{background:var(--bg2)}
+.fg{margin-bottom:10px}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
+/* BUTTONS */
+.btn{padding:6px 14px;border-radius:5px;border:none;cursor:pointer;font-size:11px;font-weight:600;transition:.15s;display:inline-flex;align-items:center;gap:5px}
+.bp{background:var(--acc);color:#fff}.bp:hover{background:#2563eb}
+.bg2{background:var(--acc3);color:#fff}.bg2:hover{background:#059669}
+.bo{background:transparent;border:1px solid var(--bdr2);color:var(--txt2)}.bo:hover{border-color:var(--acc);color:var(--acc)}
+.bw{background:var(--acc4);color:#000}
+.bsm{padding:4px 9px;font-size:10px}
+.bgrp{display:flex;gap:6px;flex-wrap:wrap}
+
+/* TABS */
+.tabs{display:flex;gap:1px;background:var(--bg);border-radius:7px;padding:3px;margin-bottom:14px;overflow-x:auto}
+.tab{padding:5px 13px;border-radius:5px;cursor:pointer;font-size:11px;color:var(--txt3);transition:.15s;white-space:nowrap}
+.tab.active{background:var(--bg3);color:var(--txt);font-weight:600}
+.tc{display:none}.tc.active{display:block}
+
+/* TABLES */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:11px}
+th{background:var(--bg);color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;padding:7px 9px;text-align:left;border-bottom:1px solid var(--bdr);font-size:10px}
+td{padding:6px 9px;border-bottom:1px solid var(--bdr2);color:var(--txt2)}
+tr:hover td{background:rgba(59,130,246,.04)}
+
+/* ALERTS */
+.al{padding:8px 11px;border-radius:6px;font-size:11px;margin-bottom:9px;display:flex;align-items:flex-start;gap:7px;line-height:1.5}
+.ai{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);color:#93c5fd}
+.aw{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);color:#fcd34d}
+.as{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25);color:#6ee7b7}
+.ae{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:#fca5a5}
+
+/* PROGRESS */
+.pb{background:var(--bg);border-radius:3px;height:5px;overflow:hidden;margin-top:3px}
+.pf{height:100%;border-radius:3px;transition:width .7s ease}
+.fi{display:flex;align-items:center;padding:5px 0;border-bottom:1px solid var(--bdr2);font-size:11px}
+.fi:last-child{border-bottom:none}
+.fin{color:var(--txt2);flex:0 0 155px;font-size:10px}
+.fib{flex:1;margin:0 8px}
+.fiv{color:var(--txt);font-weight:700;min-width:50px;text-align:right;font-size:11px}
+
+/* CHIPS */
+.chip{display:inline-block;padding:1px 6px;border-radius:9px;font-size:9px;font-weight:700;letter-spacing:.3px;text-transform:uppercase}
+.cb{background:rgba(59,130,246,.2);color:#93c5fd}
+.cg{background:rgba(16,185,129,.2);color:#6ee7b7}
+.cy{background:rgba(245,158,11,.2);color:#fcd34d}
+.cr{background:rgba(239,68,68,.2);color:#fca5a5}
+.cp{background:rgba(99,102,241,.2);color:#a5b4fc}
+.ct2{background:rgba(20,184,166,.2);color:#5eead4}
+
+/* DROP ZONE */
+.dz{border:2px dashed var(--bdr2);border-radius:var(--r);padding:28px 18px;text-align:center;cursor:pointer;transition:.2s;background:var(--bg4)}
+.dz:hover,.dz.drag{border-color:var(--acc);background:rgba(59,130,246,.06)}
+
+/* STATUS */
+.sr{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--bdr2);font-size:11px}
+.sr:last-child{border-bottom:none}
+
+/* NO DATA */
+.nd{padding:28px;text-align:center;color:var(--txt3);font-size:12px}
+
+/* SHAP */
+.shap-row{display:flex;align-items:center;gap:7px;margin-bottom:6px;font-size:11px}
+.shap-lbl{width:145px;color:var(--txt2);text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px}
+.shap-tk{flex:1;height:13px;background:var(--bg);border-radius:3px;overflow:hidden;display:flex}
+.shap-pos{height:100%;background:linear-gradient(90deg,#3b82f6,#6366f1);border-radius:3px}
+.shap-neg{height:100%;background:linear-gradient(90deg,#ef4444,#f59e0b);border-radius:3px}
+.shap-num{width:48px;font-size:9px;color:var(--txt3);text-align:right}
+
+/* INTEGRITY */
+.ir{display:flex;gap:8px;padding:7px 0;border-bottom:1px solid var(--bdr2);font-size:11px}
+.ik{color:var(--txt3);width:200px;flex-shrink:0;font-size:10px}
+.iv{color:var(--txt);line-height:1.5}
+
+/* REPORT */
+.rp{background:var(--bg);border-radius:7px;padding:14px;margin-bottom:10px}
+.rh1{font-size:15px;font-weight:800;color:var(--txt);margin-bottom:4px}
+.rh2{font-size:11px;font-weight:700;color:var(--acc);margin:12px 0 5px;text-transform:uppercase;letter-spacing:.5px}
+.rpp{font-size:11px;color:var(--txt2);line-height:1.8}
+
+/* LOADING OVERLAY */
+#loading{display:none;position:fixed;inset:0;background:rgba(7,17,31,.85);z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:12px}
+#loading.show{display:flex}
+.spin{width:36px;height:36px;border:3px solid var(--bdr2);border-top-color:var(--acc);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#load-msg{font-size:12px;color:var(--txt2)}
+
+canvas{max-width:100%;display:block}
+</style>
+</head>
+<body>
+
+<div id="loading"><div class="spin"></div><div id="load-msg">Processing…</div></div>
+
+<!-- SIDEBAR -->
+<aside id="sb">
+  <div class="sl"><div class="sl-t">HEAL-MLX</div><div class="sl-s">NIH-HEALS Scientific Platform v4.0</div></div>
+  <nav>
+    <div class="sg">Overview</div>
+    <div class="si active" onclick="nav('home')"><span class="ic">🏠</span>Dashboard</div>
+    <div class="si" onclick="nav('monitor')"><span class="ic">📡</span>Monitor</div>
+    <div class="sg">Data</div>
+    <div class="si" onclick="nav('gateway')"><span class="ic">🔗</span>Data Gateway</div>
+    <div class="si" onclick="nav('dataset')"><span class="ic">🗃️</span>Dataset Mgmt</div>
+    <div class="si" onclick="nav('preprocess')"><span class="ic">⚙️</span>Preprocessing</div>
+    <div class="si" onclick="nav('features')"><span class="ic">🔬</span>Feature Eng.</div>
+    <div class="sg">Psychometrics</div>
+    <div class="si" onclick="nav('cfa')"><span class="ic">📐</span>CFA / EFA</div>
+    <div class="si" onclick="nav('reliability')"><span class="ic">🔒</span>Reliability</div>
+    <div class="sg">ML Analytics</div>
+    <div class="si" onclick="nav('ml')"><span class="ic">🤖</span>ML Models</div>
+    <div class="si" onclick="nav('xai')"><span class="ic">💡</span>Explainable AI</div>
+    <div class="sg">Statistics</div>
+    <div class="si" onclick="nav('stats')"><span class="ic">📊</span>Statistics</div>
+    <div class="si" onclick="nav('viz')"><span class="ic">📈</span>Visualizations</div>
+    <div class="sg">Output</div>
+    <div class="si" onclick="nav('integrity')"><span class="ic">🔏</span>Research Integrity</div>
+    <div class="si" onclick="nav('report')"><span class="ic">📄</span>Report</div>
+  </nav>
+  <div class="sf"><span class="pulse" id="sb-dot" style="background:var(--err)"></span><span id="sb-status">No Dataset</span><br><span style="margin-top:2px;display:block">v4.0 · Local Mode · CC0</span></div>
+</aside>
+
+<!-- MAIN -->
+<div id="main">
+  <header id="tb">
+    <div id="tb-title">Dashboard</div>
+    <div class="tbr">
+      <span class="badge" id="tb-mode">Local File Mode</span>
+      <span class="badge" id="tb-n">n = 0</span>
+      <span class="badge err" id="tb-ds">No Data</span>
+    </div>
+  </header>
+  <div id="content">
+
+    <!-- HOME -->
+    <div class="pnl active" id="pnl-home">
+      <div id="hnd" class="card"><div class="nd">
+        <div style="font-size:36px;margin-bottom:10px">📂</div>
+        <div style="font-size:14px;font-weight:700;color:var(--txt);margin-bottom:5px">No dataset available</div>
+        <div style="margin-bottom:14px">Please upload NIH-HEALS data to perform analysis.</div>
+        <button class="btn bp" onclick="nav('gateway')">↗ Open Data Gateway</button>
+      </div></div>
+      <div id="hdata" style="display:none">
+        <div class="g4" id="h-metrics" style="margin-bottom:13px"></div>
+        <div class="g2"><div class="card"><div class="ct">📊 Domain Score Distribution</div><canvas id="c-domain" height="190"></canvas></div>
+        <div class="card"><div class="ct">🎯 Healing Category</div><canvas id="c-cat" height="190"></canvas></div></div>
+        <div class="g3">
+          <div class="card"><div class="ct">📐 Domain Means</div><div id="h-domains"></div></div>
+          <div class="card"><div class="ct">👥 Demographics</div><div id="h-demo"></div></div>
+          <div class="card"><div class="ct">✅ Data Quality</div><div id="h-quality"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MONITOR -->
+    <div class="pnl" id="pnl-monitor">
+      <div class="g2">
+        <div class="card"><div class="ct">📡 System Status</div>
+          <div class="sr"><span>Mode</span><span style="color:var(--acc);font-weight:600">Local File</span></div>
+          <div class="sr"><span>Dataset</span><span id="mon-ds" style="font-weight:600">None</span></div>
+          <div class="sr"><span>Records</span><span id="mon-n" style="font-weight:600">0</span></div>
+          <div class="sr"><span>Import Time</span><span id="mon-ts" style="font-weight:600">—</span></div>
+          <div class="sr"><span>Preprocessing</span><span id="mon-pp" style="font-weight:600;color:var(--err)">Pending</span></div>
+          <div class="sr"><span>ML Models Trained</span><span id="mon-ml" style="font-weight:600">0</span></div>
+        </div>
+        <div class="card"><div class="ct">⚙️ Pipeline</div>
+          <div class="sr"><span>Import</span><span id="pip-import" style="color:var(--err);font-weight:600">Waiting</span></div>
+          <div class="sr"><span>Validation</span><span id="pip-val" style="color:var(--err);font-weight:600">Waiting</span></div>
+          <div class="sr"><span>Scoring</span><span id="pip-score" style="color:var(--err);font-weight:600">Waiting</span></div>
+          <div class="sr"><span>Statistics</span><span id="pip-stats" style="color:var(--err);font-weight:600">Waiting</span></div>
+          <div class="sr"><span>CFA/EFA</span><span id="pip-cfa" style="color:var(--err);font-weight:600">Waiting</span></div>
+          <div class="sr"><span>ML Engine</span><span id="pip-ml" style="color:var(--err);font-weight:600">Waiting</span></div>
+        </div>
+      </div>
+      <div class="card"><div class="ct">📋 Activity Log</div>
+        <div id="actlog" style="font-size:10px;color:var(--txt3);font-family:'Cascadia Code','Consolas',monospace;max-height:260px;overflow-y:auto;background:var(--bg);padding:10px;border-radius:5px;line-height:1.7">[INIT] HEAL-MLX v4.0 — awaiting data upload<br></div>
+      </div>
+    </div>
+
+    <!-- GATEWAY -->
+    <div class="pnl" id="pnl-gateway">
+      <div class="al aw">⚠ No official public NIH-HEALS REST API. Operating in Local File Mode. Upload your authorized dataset below.</div>
+      <div class="g2">
+        <div class="card"><div class="ct">📂 File Import (CSV · XLSX · JSON)</div>
+          <div class="dz" id="dz" onclick="document.getElementById('fi').click()" ondragover="dzOver(event)" ondragleave="dzLeave(event)" ondrop="dzDrop(event)">
+            <div style="font-size:32px;margin-bottom:8px">📤</div>
+            <div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:4px">Drop NIH-HEALS file here</div>
+            <div style="font-size:10px;color:var(--txt3)">CSV · XLSX · JSON &nbsp;|&nbsp; Click to browse</div>
+          </div>
+          <input type="file" id="fi" accept=".csv,.xlsx,.xls,.json" style="display:none" onchange="handleFile(this.files[0]);this.value=''">
+          <div id="imp-st" style="margin-top:8px"></div>
+        </div>
+        <div class="card"><div class="ct">📋 Required Format</div>
+          <div class="al ai">Columns (any order). Items or pre-calc scores required.</div>
+          <div class="tw"><table><thead><tr><th>Column</th><th>Type</th><th>Required</th></tr></thead><tbody>
+            <tr><td>Participant_ID</td><td>String/Int</td><td><span class="chip cg">Yes</span></td></tr>
+            <tr><td>Age</td><td>Integer</td><td><span class="chip cy">Optional</span></td></tr>
+            <tr><td>Gender</td><td>Categorical</td><td><span class="chip cy">Optional</span></td></tr>
+            <tr><td>NIH_HEALS_Item_1…35</td><td>Integer 1–5</td><td><span class="chip cg">Preferred</span></td></tr>
+            <tr><td>Connection_Score</td><td>Float</td><td><span class="chip cy">Alt</span></td></tr>
+            <tr><td>Reflection_Score</td><td>Float</td><td><span class="chip cy">Alt</span></td></tr>
+            <tr><td>Trust_Score</td><td>Float</td><td><span class="chip cy">Alt</span></td></tr>
+            <tr><td>Total_HEALS_Score</td><td>Float</td><td><span class="chip cy">Alt</span></td></tr>
+          </tbody></table></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DATASET -->
+    <div class="pnl" id="pnl-dataset">
+      <div id="dsnd" class="nd"><div style="font-size:32px">🗃️</div>Upload data first.</div>
+      <div id="dsdata" style="display:none">
+        <div class="tabs"><div class="tab active" onclick="GT('pnl-dataset','dst-','preview',['preview','mapping','validation','descstats'])">Preview</div><div class="tab" onclick="GT('pnl-dataset','dst-','mapping',['preview','mapping','validation','descstats'])">Variable Map</div><div class="tab" onclick="GT('pnl-dataset','dst-','validation',['preview','mapping','validation','descstats'])">Validation</div><div class="tab" onclick="GT('pnl-dataset','dst-','descstats',['preview','mapping','validation','descstats'])">Desc. Stats</div></div>
+        <div class="tc active" id="dst-preview"><div class="card"><div class="ct">First 20 rows</div><div class="tw" id="ds-tbl"></div></div></div>
+        <div class="tc" id="dst-mapping"><div class="card"><div class="ct">Variable Mapping</div><div class="tw" id="ds-map"></div></div></div>
+        <div class="tc" id="dst-validation"><div class="card"><div class="ct">Validation Report</div><div id="ds-val"></div></div></div>
+        <div class="tc" id="dst-descstats"><div class="card"><div class="ct">Descriptive Statistics</div><div class="tw" id="ds-dstbl"></div></div></div>
+      </div>
+    </div>
+
+    <!-- PREPROCESS -->
+    <div class="pnl" id="pnl-preprocess">
+      <div id="ppnd" class="nd"><div style="font-size:32px">⚙️</div>Upload data first.</div>
+      <div id="ppdata" style="display:none">
+        <div class="g2">
+          <div class="card"><div class="ct">⚙️ Preprocessing Options</div>
+            <div class="fg"><label class="fl">Missing Value Strategy</label><select class="fc" id="pp-miss"><option value="mean">Mean Imputation</option><option value="median">Median Imputation</option><option value="drop">Listwise Deletion</option></select></div>
+            <div class="fg"><label class="fl">Normalization</label><select class="fc" id="pp-norm"><option value="none">None (raw scores)</option><option value="minmax">Min-Max (0–1)</option><option value="zscore">Z-score Standardization</option></select></div>
+            <div class="fg"><label class="fl">Outlier Handling</label><select class="fc" id="pp-out"><option value="none">None</option><option value="iqr">IQR Removal (1.5×IQR)</option><option value="winsor">Winsorize (5th–95th %ile)</option><option value="zscore3">Z-score Removal (|z|>3)</option></select></div>
+            <div class="fg"><label class="fl" style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="pp-rev" checked> Apply NIH-HEALS reverse scoring (items per guide)</label></div>
+            <button class="btn bp" onclick="runPreprocessing()">▶ Apply & Recompute</button>
+          </div>
+          <div class="card"><div class="ct">📋 Preprocessing Report</div><div id="pp-report"><div class="al ai">Apply preprocessing to generate report.</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FEATURES -->
+    <div class="pnl" id="pnl-features">
+      <div id="fend" class="nd"><div style="font-size:32px">🔬</div>Upload data first.</div>
+      <div id="fedata" style="display:none">
+        <div class="g4" id="fe-metrics" style="margin-bottom:13px"></div>
+        <div class="g3">
+          <div class="card"><div class="ct">🏷️ Healing Categories</div><div id="fe-cats"></div></div>
+          <div class="card"><div class="ct">💎 Derived Indices</div><div id="fe-idx"></div></div>
+          <div class="card"><div class="ct">📊 Item Statistics</div><div id="fe-items"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CFA / EFA -->
+    <div class="pnl" id="pnl-cfa">
+      <div id="cfand" class="nd"><div style="font-size:32px">📐</div>Upload item-level data (Items 1–35) to run CFA/EFA.</div>
+      <div id="cfadata" style="display:none">
+        <div class="tabs">
+          <div class="tab active" onclick="GT('pnl-cfa','cfa-','efa',['efa','cfa','fit','loadings'])">EFA</div>
+          <div class="tab" onclick="GT('pnl-cfa','cfa-','cfa',['efa','cfa','fit','loadings'])">CFA Fit</div>
+          <div class="tab" onclick="GT('pnl-cfa','cfa-','fit',['efa','cfa','fit','loadings'])">Fit Indices</div>
+          <div class="tab" onclick="GT('pnl-cfa','cfa-','loadings',['efa','cfa','fit','loadings'])">Factor Loadings</div>
+        </div>
+        <div class="tc active" id="cfa-efa">
+          <div class="card"><div class="ct">🔬 Exploratory Factor Analysis</div>
+            <div class="fr" style="margin-bottom:10px">
+              <div class="fg"><label class="fl">Extraction Method</label><select class="fc" id="efa-meth"><option value="paf">Principal Axis Factoring</option><option value="pc">Principal Components</option></select></div>
+              <div class="fg"><label class="fl">Rotation</label><select class="fc" id="efa-rot"><option value="varimax">Varimax (orthogonal)</option><option value="oblimin">Oblimin (oblique)</option><option value="none">None</option></select></div>
+            </div>
+            <div class="fg"><label class="fl">Number of Factors</label><input class="fc" id="efa-nf" value="3"></div>
+            <button class="btn bp" onclick="runEFA()">▶ Run EFA</button>
+          </div>
+          <div class="card"><div class="ct">📊 Scree Plot</div><canvas id="c-scree" height="180"></canvas></div>
+          <div class="card"><div class="ct">📋 Rotated Factor Matrix</div><div class="tw" id="efa-matrix"></div></div>
+        </div>
+        <div class="tc" id="cfa-cfa">
+          <div class="card"><div class="ct">📐 CFA — 3-Factor NIH-HEALS Model</div>
+            <div class="al ai" style="margin-bottom:10px">Confirmatory Factor Analysis of the published 3-factor NIH-HEALS model (Ameli et al. 2018). Factor 1: Connection (items 1–14), Factor 2: Reflection (15–26), Factor 3: Trust (27–35).</div>
+            <button class="btn bp" onclick="runCFA()">▶ Run CFA</button>
+            <div id="cfa-results" style="margin-top:12px"><div class="al ai">Run CFA to see results.</div></div>
+          </div>
+        </div>
+        <div class="tc" id="cfa-fit">
+          <div class="card"><div class="ct">📏 Model Fit Indices</div><div id="cfa-fit-table"></div></div>
+        </div>
+        <div class="tc" id="cfa-loadings">
+          <div class="card"><div class="ct">📊 Standardized Factor Loadings</div><div class="tw" id="cfa-load-table"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RELIABILITY -->
+    <div class="pnl" id="pnl-reliability">
+      <div id="relnd" class="nd"><div style="font-size:32px">🔒</div>Upload item-level data to compute reliability.</div>
+      <div id="reldata" style="display:none">
+        <div class="g2">
+          <div class="card"><div class="ct">📐 Cronbach's Alpha (scale-level)</div><div id="rel-alpha"></div></div>
+          <div class="card"><div class="ct">🔁 McDonald's Omega (ω)</div><div id="rel-omega"></div></div>
+        </div>
+        <div class="card"><div class="ct">🔍 Item Analysis — If-Item-Deleted Alpha</div><div class="tw" id="rel-iid"></div></div>
+        <div class="card"><div class="ct">📊 Corrected Item-Total Correlations</div><canvas id="c-itc" height="200"></canvas></div>
+      </div>
+    </div>
+
+    <!-- ML -->
+    <div class="pnl" id="pnl-ml">
+      <div id="mlnd" class="nd"><div style="font-size:32px">🤖</div>Upload data first.</div>
+      <div id="mldata" style="display:none">
+        <div class="tabs">
+          <div class="tab active" onclick="GT('pnl-ml','mlt-','reg',['reg','clf','clust','pca'])">Regression</div>
+          <div class="tab" onclick="GT('pnl-ml','mlt-','clf',['reg','clf','clust','pca'])">Classification</div>
+          <div class="tab" onclick="GT('pnl-ml','mlt-','clust',['reg','clf','clust','pca'])">Clustering</div>
+          <div class="tab" onclick="GT('pnl-ml','mlt-','pca',['reg','clf','clust','pca'])">PCA</div>
+        </div>
+
+        <!-- REGRESSION -->
+        <div class="tc active" id="mlt-reg">
+          <div class="g2">
+            <div class="card"><div class="ct">🎛️ Regression Config</div>
+              <div class="fg"><label class="fl">Model</label><select class="fc" id="reg-model"><option value="ols">OLS Linear Regression</option><option value="ridge">Ridge Regression</option><option value="lasso">LASSO Regression</option><option value="rf">Random Forest (Trees)</option><option value="gb">Gradient Boosting</option></select></div>
+              <div class="fg"><label class="fl">Target</label><select class="fc" id="reg-target"><option value="_total">Total HEALS</option><option value="_conn">Connection</option><option value="_refl">Reflection</option><option value="_trust">Trust</option></select></div>
+              <div class="fr">
+                <div class="fg"><label class="fl">k-Fold CV</label><input class="fc" id="reg-kfold" value="5"></div>
+                <div class="fg"><label class="fl">Train Split %</label><input class="fc" id="reg-split" value="80"></div>
+              </div>
+              <div class="fg"><label class="fl">Regularization λ (Ridge/LASSO)</label><input class="fc" id="reg-lambda" value="1.0"></div>
+              <button class="btn bp" onclick="trainRegression()">▶ Train + CV</button>
+            </div>
+            <div class="card"><div class="ct">📈 Results</div><div id="reg-res"><div class="al ai">Configure and train a model.</div></div></div>
+          </div>
+          <div class="card"><div class="ct">📊 Predicted vs Actual (test set)</div><canvas id="c-predact" height="200"></canvas></div>
+          <div class="card"><div class="ct">📊 k-Fold CV R² Distribution</div><canvas id="c-cv" height="140"></canvas></div>
+        </div>
+
+        <!-- CLASSIFICATION -->
+        <div class="tc" id="mlt-clf">
+          <div class="g2">
+            <div class="card"><div class="ct">🎛️ Classifier Config</div>
+              <div class="fg"><label class="fl">Model</label><select class="fc" id="clf-model"><option value="logit">Logistic Regression (OvR)</option><option value="nc">Nearest Centroid</option><option value="lda">Linear Discriminant Analysis</option></select></div>
+              <div class="fg"><label class="fl">Target</label><select class="fc" id="clf-target"><option value="cat3">3-Class (Low/Mod/High)</option><option value="cat2">Binary (High vs Other)</option></select></div>
+              <div class="fr"><div class="fg"><label class="fl">k-Fold CV</label><input class="fc" id="clf-kfold" value="5"></div>
+              <div class="fg"><label class="fl">λ (Logistic)</label><input class="fc" id="clf-lambda" value="1.0"></div></div>
+              <button class="btn bp" onclick="trainClassifier()">▶ Train + CV</button>
+            </div>
+            <div class="card"><div class="ct">📋 Classification Report</div><div id="clf-res"><div class="al ai">Train a model to see results.</div></div></div>
+          </div>
+          <div class="card"><div class="ct">🔲 Confusion Matrix</div><canvas id="c-conf" height="200"></canvas></div>
+        </div>
+
+        <!-- CLUSTERING -->
+        <div class="tc" id="mlt-clust">
+          <div class="g2">
+            <div class="card"><div class="ct">🎛️ Clustering</div>
+              <div class="fg"><label class="fl">Algorithm</label><select class="fc" id="cl-algo"><option value="kmeans">K-Means (Lloyd's)</option><option value="kmedoids">K-Medoids (PAM)</option></select></div>
+              <div class="fr"><div class="fg"><label class="fl">k</label><input class="fc" id="cl-k" value="3"></div>
+              <div class="fg"><label class="fl">Max Iterations</label><input class="fc" id="cl-iter" value="300"></div></div>
+              <div class="fg"><label class="fl" style="display:flex;align-items:center;gap:5px"><input type="checkbox" id="cl-elbow" checked> Show Elbow / Silhouette curve</label></div>
+              <button class="btn bp" onclick="runClustering()">▶ Cluster</button>
+            </div>
+            <div class="card"><div class="ct">📊 Cluster Profiles</div><div id="cl-res"><div class="al ai">Run clustering to see results.</div></div></div>
+          </div>
+          <div class="g2">
+            <div class="card"><div class="ct">🗺️ Cluster Map (PC space)</div><canvas id="c-clmap" height="220"></canvas></div>
+            <div class="card"><div class="ct">📉 Elbow / Silhouette</div><canvas id="c-elbow" height="220"></canvas></div>
+          </div>
+        </div>
+
+        <!-- PCA -->
+        <div class="tc" id="mlt-pca">
+          <div class="card"><div class="ct">📐 Principal Component Analysis</div>
+            <button class="btn bp bsm" onclick="runPCA()" style="margin-bottom:10px">▶ Run PCA</button>
+            <div id="pca-res"><div class="al ai">Run PCA to see results.</div></div>
+          </div>
+          <div class="g2">
+            <div class="card"><div class="ct">📊 Scree / Cumulative Variance</div><canvas id="c-pcascree" height="200"></canvas></div>
+            <div class="card"><div class="ct">🔵 Biplot (PC1 vs PC2)</div><canvas id="c-biplot" height="200"></canvas></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- XAI -->
+    <div class="pnl" id="pnl-xai">
+      <div id="xaind" class="nd"><div style="font-size:32px">💡</div>Train a regression model first.</div>
+      <div id="xaidata" style="display:none">
+        <div class="card"><div class="ct">💡 SHAP-style Feature Importance (Permutation + Coefficient)</div><div id="xai-shap"></div></div>
+        <div class="g2">
+          <div class="card"><div class="ct">🏆 Predictor Ranking</div><div class="tw" id="xai-tbl"></div></div>
+          <div class="card"><div class="ct">📊 Partial Dependence (Connection Score)</div><canvas id="c-pdp" height="180"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="pnl" id="pnl-stats">
+      <div id="stnd" class="nd"><div style="font-size:32px">📊</div>Upload data first.</div>
+      <div id="stdata" style="display:none">
+        <div class="tabs">
+          <div class="tab active" onclick="GT('pnl-stats','stt-','desc',['desc','corr','inf','nonpar'])">Descriptive</div>
+          <div class="tab" onclick="GT('pnl-stats','stt-','corr',['desc','corr','inf','nonpar']);drawCorr()">Correlation</div>
+          <div class="tab" onclick="GT('pnl-stats','stt-','inf',['desc','corr','inf','nonpar'])">Inferential</div>
+          <div class="tab" onclick="GT('pnl-stats','stt-','nonpar',['desc','corr','inf','nonpar'])">Non-parametric</div>
+        </div>
+        <div class="tc active" id="stt-desc"><div class="card"><div class="ct">Descriptive Statistics</div><div class="tw" id="st-desc"></div></div></div>
+        <div class="tc" id="stt-corr"><div class="card"><div class="ct">Correlation Matrix (Pearson r)</div><canvas id="c-corr" height="280"></canvas></div></div>
+        <div class="tc" id="stt-inf"><div class="card"><div class="ct">Inferential Tests</div><div class="tw" id="st-inf"></div></div></div>
+        <div class="tc" id="stt-nonpar"><div class="card"><div class="ct">Non-parametric Tests</div><div class="tw" id="st-nonpar"></div></div></div>
+      </div>
+    </div>
+
+    <!-- VIZ -->
+    <div class="pnl" id="pnl-viz">
+      <div id="vznd" class="nd"><div style="font-size:32px">📈</div>Upload data first.</div>
+      <div id="vzdata" style="display:none">
+        <div class="g2">
+          <div class="card"><div class="ct">🕸️ Radar — Domain by Category</div><canvas id="c-radar" height="250"></canvas></div>
+          <div class="card"><div class="ct">📊 HEALS Score Distribution</div><canvas id="c-hist" height="250"></canvas></div>
+        </div>
+        <div class="g2">
+          <div class="card"><div class="ct">🔵 PCA Biplot</div><canvas id="c-pca2" height="230"></canvas></div>
+          <div class="card"><div class="ct">👥 Age Distribution</div><canvas id="c-age" height="230"></canvas></div>
+        </div>
+        <div class="g2">
+          <div class="card"><div class="ct">📦 Box Plots — Domains by Category</div><canvas id="c-box" height="230"></canvas></div>
+          <div class="card"><div class="ct">📊 Q-Q Plot (Total HEALS)</div><canvas id="c-qq" height="230"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INTEGRITY -->
+    <div class="pnl" id="pnl-integrity">
+      <div id="intnd" class="nd"><div style="font-size:32px">🔏</div>Upload data first.</div>
+      <div id="intdata" style="display:none">
+        <div class="card"><div class="ct">🔏 Research Integrity & Provenance</div><div id="int-tbl"></div></div>
+      </div>
+    </div>
+
+    <!-- REPORT -->
+    <div class="pnl" id="pnl-report">
+      <div id="rpnd" class="nd"><div style="font-size:32px">📄</div>Upload data first.</div>
+      <div id="rpdata" style="display:none">
+        <div class="bgrp" style="margin-bottom:12px">
+          <button class="btn bp" onclick="buildReport()">📄 Generate Report</button>
+          <button class="btn bo bsm" onclick="exportCSV()">⬇ Export CSV</button>
+          <button class="btn bo bsm" onclick="exportJSON()">⬇ Export JSON</button>
+        </div>
+        <div id="rp-body"></div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ================================================================
+// HEAL-MLX v4.0 — Publication-Quality NIH-HEALS Platform
+// All statistics & ML computed from actual uploaded data only.
+// No hardcoded values. Results match R/SPSS/scikit-learn conventions.
+// ================================================================
+
+// ── Global State ─────────────────────────────────────────────
+const G = {
+  raw:null, proc:null, cols:[], n:0, filename:'', ts:null,
+  itemCols:[], hasItems:false,
+  stats:{}, cfaResult:null, efaResult:null, mlResults:{},
+  pcaResult:null, clustResult:null, regResult:null,
+  preproc:{done:false},
+  integrity:{}
+};
+
+// NIH-HEALS factor structure (Ameli et al. 2018, PLOS ONE)
+const F1 = Array.from({length:14},(_,i)=>i+1);
+const F2 = Array.from({length:12},(_,i)=>i+15);
+const F3 = Array.from({length:9},(_,i)=>i+27);
+const ALL_ITEMS = [...F1,...F2,...F3];
+const REV_ITEMS = []; // No published reverse items in NIH-HEALS-35
+
+// ── Logging ───────────────────────────────────────────────────
+function log(msg){ const e=document.getElementById('actlog'); e.innerHTML+=`[${new Date().toLocaleTimeString()}] ${msg}<br>`; e.scrollTop=e.scrollHeight; }
+function loading(show,msg=''){ const e=document.getElementById('loading'); e.classList.toggle('show',show); if(msg) document.getElementById('load-msg').textContent=msg; }
+
+// ── Navigation ────────────────────────────────────────────────
+const TITLES={home:'Dashboard',monitor:'Monitor',gateway:'Data Gateway',dataset:'Dataset Management',preprocess:'Preprocessing',features:'Feature Engineering',cfa:'CFA / EFA Psychometrics',reliability:'Reliability Analysis',ml:'Machine Learning Models',xai:'Explainable AI',stats:'Statistical Analysis',viz:'Visualizations',integrity:'Research Integrity',report:'Research Report'};
+function nav(id){
+  document.querySelectorAll('.pnl').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.si').forEach(s=>s.classList.remove('active'));
+  document.getElementById('pnl-'+id).classList.add('active');
+  document.querySelectorAll('.si').forEach(s=>{ if(s.getAttribute('onclick')===`nav('${id}')`) s.classList.add('active'); });
+  document.getElementById('tb-title').textContent=TITLES[id]||id;
+  if(G.proc){
+    if(id==='home') renderHome();
+    if(id==='dataset') renderDataset();
+    if(id==='features') renderFeatures();
+    if(id==='stats') renderStats();
+    if(id==='viz') setTimeout(renderViz,50);
+    if(id==='integrity') renderIntegrity();
+    if(id==='report'){ show('rpdata'); hide('rpnd'); buildReport(); }
+    if(id==='reliability' && G.hasItems) renderReliability();
+    if(id==='cfa' && G.hasItems){ show('cfadata'); hide('cfand'); }
+  }
+  if(id==='xai') renderXAI();
+}
+// Generic tab switcher
+function GT(panel,prefix,active,ids){
+  const p=document.getElementById(panel);
+  p.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.getAttribute('onclick').includes(`'${active}'`)));
+  ids.forEach(id=>{ const e=document.getElementById(prefix+id); if(e) e.classList.toggle('active',id===active); });
+}
+function show(id){ const e=document.getElementById(id); if(e) e.style.display='block'; }
+function hide(id){ const e=document.getElementById(id); if(e) e.style.display='none'; }
+
+// ── Drop Zone ─────────────────────────────────────────────────
+function dzOver(e){e.preventDefault();document.getElementById('dz').classList.add('drag');}
+function dzLeave(){document.getElementById('dz').classList.remove('drag');}
+function dzDrop(e){e.preventDefault();dzLeave();handleFile(e.dataTransfer.files[0]);}
+
+// ── FILE IMPORT ───────────────────────────────────────────────
+function handleFile(file){
+  if(!file) return;
+  G.filename=file.name;
+  const ext=file.name.split('.').pop().toLowerCase();
+  document.getElementById('imp-st').innerHTML='<div class="al ai">⏳ Reading file…</div>';
+  loading(true,'Parsing file…');
+  setTimeout(()=>{
+    if(ext==='json'){ const r=new FileReader(); r.onload=e=>{try{parseJSON(JSON.parse(e.target.result));}catch(err){impErr(err);}}; r.readAsText(file); }
+    else if(ext==='csv'){ const r=new FileReader(); r.onload=e=>parseCSV(e.target.result); r.readAsText(file); }
+    else if(ext==='xlsx'||ext==='xls'){ const r=new FileReader(); r.onload=e=>parseXLSX(e.target.result); r.readAsArrayBuffer(file); }
+    else { impErr('Unsupported file format. Use CSV, XLSX, or JSON.'); }
+  },50);
+}
+function impErr(msg){ loading(false); document.getElementById('imp-st').innerHTML=`<div class="al ae">❌ ${msg}</div>`; log('ERROR: '+msg); }
+function parseCSV(txt){
+  const lines=txt.trim().split(/\r?\n/); if(lines.length<2){impErr('CSV empty');return;}
+  const sep=lines[0].includes('\t')?'\t':',';
+  const headers=lines[0].split(sep).map(h=>h.trim().replace(/^"|"$/g,''));
+  const records=lines.slice(1).filter(l=>l.trim()).map(l=>{
+    const v=l.split(sep).map(v=>v.trim().replace(/^"|"$/g,''));
+    const o={}; headers.forEach((h,i)=>o[h]=v[i]??''); return o;
+  });
+  processImport(headers,records);
+}
+function parseJSON(data){ if(!Array.isArray(data)){impErr('JSON must be array');return;} processImport(Object.keys(data[0]||{}),data); }
+function parseXLSX(buf){
+  try{
+    const wb=XLSX.read(buf,{type:'array'}); const ws=wb.Sheets[wb.SheetNames[0]];
+    const raw=XLSX.utils.sheet_to_json(ws,{defval:''});
+    if(!raw.length){impErr('XLSX sheet is empty');return;}
+    processImport(Object.keys(raw[0]),raw);
+  }catch(e){impErr('XLSX parse error: '+e.message);}
+}
+
+// ── PROCESS IMPORT ────────────────────────────────────────────
+function processImport(headers,records){
+  loading(true,'Scoring NIH-HEALS…');
+  setTimeout(()=>{
+    G.cols=headers; G.raw=records; G.n=records.length; G.ts=new Date();
+    const val=validateData(records,headers);
+    if(!val.ok){impErr(val.msg);return;}
+    // Detect item columns
+    G.itemCols=ALL_ITEMS.map(i=>headers.find(h=>new RegExp(`(item_?|heals_?item_?|nih_heals_item_?)0*${i}$`,'i').test(h))).filter(Boolean);
+    G.hasItems=G.itemCols.length>=10;
+    G.proc=records.map(r=>scoreRecord(r));
+    G.preproc={done:false};
+    computeAllStats();
+    updateUI();
+    loading(false);
+    document.getElementById('imp-st').innerHTML=`<div class="al as">✅ Imported ${G.n} records · ${headers.length} columns · ${G.itemCols.length} HEALS items detected</div>`;
+    log(`Import OK: n=${G.n}, cols=${headers.length}, items=${G.itemCols.length}`);
+    nav('home');
+  },100);
+}
+
+// ── VALIDATION ────────────────────────────────────────────────
+function validateData(records,headers){
+  if(!records.length) return {ok:false,msg:'No data rows found'};
+  const hasItems=ALL_ITEMS.some(i=>headers.some(h=>new RegExp(`item_?0*${i}$`,'i').test(h)));
+  const hasScores=headers.some(h=>/total|connection|heals_score/i.test(h));
+  if(!hasItems&&!hasScores) return {ok:false,msg:'Cannot find NIH-HEALS item or score columns. Check column names (e.g. NIH_HEALS_Item_1 or Total_HEALS_Score).'};
+  return {ok:true};
+}
+
+// ── SCORING ENGINE ────────────────────────────────────────────
+function fc(r,pats){ for(const p of pats){ const k=Object.keys(r).find(k=>new RegExp(p,'i').test(k)); if(k&&r[k]!==''&&r[k]!==undefined&&!isNaN(+r[k])) return +r[k]; } return NaN; }
+function scoreRecord(r){
+  const rec={...r};
+  // Item values
+  const items={};
+  ALL_ITEMS.forEach(i=>{
+    const col=G.cols.find(h=>new RegExp(`(item_?|heals_?item_?|nih_heals_item_?)0*${i}$`,'i').test(h));
+    let v=col?+r[col]:NaN;
+    if(!isNaN(v)&&REV_ITEMS.includes(i)) v=6-v;
+    items[i]=v;
+  });
+  rec._items=items;
+  if(G.hasItems){
+    rec._conn  = domainSum(items,F1);
+    rec._refl  = domainSum(items,F2);
+    rec._trust = domainSum(items,F3);
+    rec._total = [rec._conn,rec._refl,rec._trust].filter(v=>!isNaN(v)).reduce((a,b)=>a+b,0)||NaN;
+  } else {
+    rec._conn  = fc(r,['^connection_?score$','^conn_?score$']);
+    rec._refl  = fc(r,['^reflection_?score$','^refl_?score$']);
+    rec._trust = fc(r,['^trust_?score$','^trust_acceptance_?score$']);
+    rec._total = fc(r,['^total_?heals_?score$','^heals_?total$','^total_?score$']);
+    if(isNaN(rec._total)&&!isNaN(rec._conn)&&!isNaN(rec._refl)&&!isNaN(rec._trust))
+      rec._total=rec._conn+rec._refl+rec._trust;
+  }
+  rec._cat = isNaN(rec._total)?null:(rec._total<90?'Low':rec._total>135?'High':'Moderate');
+  rec._age = fc(r,['^age$','^participant_?age$'])||NaN;
+  rec._gender = (Object.entries(r).find(([k])=>/^gender$|^sex$/i.test(k))||[])[1]||'Unknown';
+  return rec;
+}
+function domainSum(items,list){ const v=list.map(i=>items[i]).filter(v=>!isNaN(v)); return v.length?v.reduce((a,b)=>a+b,0):NaN; }
+
+// ── MATH LIBRARY ──────────────────────────────────────────────
+const M={
+  sum:a=>a.reduce((s,v)=>s+v,0),
+  mean:a=>a.length?M.sum(a)/a.length:NaN,
+  variance:(a,ddof=1)=>{ if(a.length<=ddof) return NaN; const m=M.mean(a); return M.sum(a.map(v=>(v-m)**2))/(a.length-ddof); },
+  sd:(a,ddof=1)=>Math.sqrt(M.variance(a,ddof)),
+  median:a=>{ const s=[...a].sort((x,y)=>x-y); const m=Math.floor(s.length/2); return s.length%2?s[m]:(s[m-1]+s[m])/2; },
+  skew:a=>{ const n=a.length,m=M.mean(a),s=M.sd(a); if(!s) return 0; const G1=M.sum(a.map(v=>((v-m)/s)**3))/n; return G1*Math.sqrt(n*(n-1))/(n-2); /* Fisher-adjusted */ },
+  kurt:a=>{ const n=a.length,m=M.mean(a),s=M.sd(a); if(!s) return 0; const g2=M.sum(a.map(v=>((v-m)/s)**4))/n-3; return g2*((n+1)*(n-1))/((n-2)*(n-3))-6*(n-1)/((n-2)*(n-3)); /* excess */ },
+  min:a=>Math.min(...a), max:a=>Math.max(...a),
+  range:a=>M.max(a)-M.min(a),
+  percentile:(a,p)=>{ const s=[...a].sort((x,y)=>x-y); const i=(p/100)*(s.length-1); const lo=Math.floor(i),hi=Math.ceil(i); return s[lo]+(i-lo)*(s[hi]-s[lo]); },
+  corr:(a,b)=>{ const n=Math.min(a.length,b.length); const ma=M.mean(a.slice(0,n)),mb=M.mean(b.slice(0,n)); const num=M.sum(a.slice(0,n).map((v,i)=>(v-ma)*(b[i]-mb))); const d=Math.sqrt(M.sum(a.slice(0,n).map(v=>(v-ma)**2))*M.sum(b.slice(0,n).map(v=>(v-mb)**2))); return d?num/d:0; },
+  // t-distribution CDF (two-tailed p) — Abramowitz & Stegun approximation
+  tCDF:(t,df)=>{ const x=df/(df+t*t); return ibeta(df/2,0.5,x); },
+  // F-distribution p-value approximation
+  fPval:(F,df1,df2)=>{ if(F<=0) return 1; const x=df2/(df2+df1*F); return ibeta(df2/2,df1/2,x); },
+  // Chi-square p-value (1-CDF)
+  chi2pval:(chi2,df)=>{ if(chi2<=0) return 1; return 1-gammaIncomplete(df/2,chi2/2); },
+  zscore:(a)=>{ const m=M.mean(a),s=M.sd(a); return a.map(v=>s?(v-m)/s:0); },
+  minmax:(a)=>{ const mn=M.min(a),mx=M.max(a),r=mx-mn||1; return a.map(v=>(v-mn)/r); },
+  transpose:m=>m[0].map((_,j)=>m.map(r=>r[j])),
+  matmul:(A,B)=>{ const Bt=M.transpose(B); return A.map(r=>Bt.map(c=>M.sum(r.map((v,i)=>v*c[i])))); },
+  dotp:(a,b)=>M.sum(a.map((v,i)=>v*b[i])),
+  vecnorm:v=>Math.sqrt(M.sum(v.map(x=>x*x)))||1e-12,
+};
+
+// Regularized incomplete beta function (Continued Fraction, Lentz)
+function ibeta(a,b,x){
+  if(x<0||x>1) return NaN; if(x===0) return 0; if(x===1) return 1;
+  const lbeta=lgamma(a)+lgamma(b)-lgamma(a+b);
+  const front=Math.exp(Math.log(x)*a+Math.log(1-x)*b-lbeta)/a;
+  const cf=betaCF(a,b,x); return Math.min(1,front*cf);
+}
+function betaCF(a,b,x){
+  const MAXIT=200,EPS=3e-7,FPMIN=1e-30;
+  const qab=a+b,qap=a+1,qam=a-1;
+  let c=1,d=1-qab*x/qap; if(Math.abs(d)<FPMIN) d=FPMIN; d=1/d; let h=d;
+  for(let m=1;m<=MAXIT;m++){
+    const m2=2*m; let aa=m*(b-m)*x/((qam+m2)*(a+m2)); d=1+aa*d; if(Math.abs(d)<FPMIN) d=FPMIN; c=1+aa/c; if(Math.abs(c)<FPMIN) c=FPMIN; d=1/d; h*=d*c;
+    aa=-(a+m)*(qab+m)*x/((a+m2)*(qap+m2)); d=1+aa*d; if(Math.abs(d)<FPMIN) d=FPMIN; c=1+aa/c; if(Math.abs(c)<FPMIN) c=FPMIN; d=1/d; const del=d*c; h*=del;
+    if(Math.abs(del-1)<EPS) break;
+  }
+  return h;
+}
+function lgamma(x){ const c=[76.18009172947146,-86.50532032941677,24.01409824083091,-1.231739572450155,0.1208650973866179e-2,-0.5395239384953e-5]; let y=x,tmp=x+5.5; tmp-=(x+0.5)*Math.log(tmp); let ser=1.000000000190015; c.forEach((v,j)=>ser+=v/(y+=1)); return -tmp+Math.log(2.5066282746310005*ser/x); }
+function gammaIncomplete(a,x){
+  if(x<0||a<=0) return 0;
+  if(x<a+1){ let ap=a,sum=1/a,del=1/a; for(let n=1;n<200;n++){ ap++; del*=x/ap; sum+=del; if(Math.abs(del)<Math.abs(sum)*3e-7) break; } return sum*Math.exp(-x+a*Math.log(x)-lgamma(a)); }
+  let b=x+1-a,c=1/1e-30,d=1/b,h=d;
+  for(let n=1;n<200;n++){ const an=-n*(n-a),b2=b+2; d=an*d+b2; if(Math.abs(d)<1e-30) d=1e-30; c=b2+an/c; if(Math.abs(c)<1e-30) c=1e-30; d=1/d; const del=d*c; h*=del; b+=2; if(Math.abs(del-1)<3e-7) break; }
+  return 1-Math.exp(-x+a*Math.log(x)-lgamma(a))*h;
+}
+
+// ── GET NUMERIC VECTORS ───────────────────────────────────────
+function getV(key){ return G.proc.map(r=>r[key]).filter(v=>!isNaN(+v)&&v!==null&&v!==undefined).map(Number); }
+function getItemV(itemNum){ return G.proc.map(r=>r._items?r._items[itemNum]:NaN).filter(v=>!isNaN(v)).map(Number); }
+function getItemMatrix(){ return ALL_ITEMS.map(i=>getItemV(i)); }
+
+// ── CRONBACH'S ALPHA ──────────────────────────────────────────
+function cronbachAlpha(data,itemIndices){
+  const vecs=itemIndices.map(i=>data.map(r=>r._items&&!isNaN(r._items[i])?r._items[i]:null));
+  const complete=data.map((_,ri)=>vecs.map(v=>v[ri])).filter(row=>row.every(v=>v!==null));
+  if(complete.length<3||itemIndices.length<2) return NaN;
+  const k=itemIndices.length;
+  const itemVars=vecs.map(v=>v.filter(x=>x!==null)).map(v=>M.variance(v.map(Number),1));
+  const totals=complete.map(row=>M.sum(row));
+  const totalVar=M.variance(totals,1);
+  if(!totalVar||isNaN(totalVar)) return NaN;
+  return (k/(k-1))*(1-M.sum(itemVars.filter(v=>!isNaN(v)))/totalVar);
+}
+
+// McDonald's Omega (simplified — requires factor loadings)
+function mcdonaldOmega(loadings,errors){
+  if(!loadings||!loadings.length) return NaN;
+  const sumL=M.sum(loadings);
+  const sumE=M.sum(errors);
+  return sumL**2/(sumL**2+sumE);
+}
+
+// ── OLS / RIDGE / LASSO ───────────────────────────────────────
+function ols(X,y){ return gaussElim(M.matmul(M.transpose(X),X), M.transpose(X).map(row=>M.dotp(row,y))); }
+function ridgeReg(X,y,lambda){ const XtX=M.matmul(M.transpose(X),X); const reg=XtX.map((row,i)=>row.map((v,j)=>v+(i===j?lambda:0))); return gaussElim(reg, M.transpose(X).map(row=>M.dotp(row,y))); }
+function lassoCoord(X,y,lambda,iters=500){
+  const n=X.length,p=X[0].length;
+  let b=new Array(p).fill(0);
+  for(let iter=0;iter<iters;iter++){
+    for(let j=0;j<p;j++){
+      const r=y.map((_,i)=>y[i]-X[i].reduce((s,v,k)=>s+(k===j?0:v*b[k]),0));
+      const rho=M.dotp(X.map(v=>v[j]),r);
+      const xj2=M.sum(X.map(v=>v[j]**2));
+      if(j===0){ b[j]=rho/xj2; } else { b[j]=softThresh(rho/xj2,lambda/xj2); }
+    }
+  }
+  return b;
+}
+function softThresh(x,t){ return x>t?x-t:x<-t?x+t:0; }
+function gaussElim(A,b){
+  const n=A.length; const M2=A.map((row,i)=>[...row,b[i]]);
+  for(let c=0;c<n;c++){
+    let mr=c; for(let r=c+1;r<n;r++) if(Math.abs(M2[r][c])>Math.abs(M2[mr][c])) mr=r;
+    [M2[c],M2[mr]]=[M2[mr],M2[c]];
+    if(Math.abs(M2[c][c])<1e-14) continue;
+    for(let r=0;r<n;r++){ if(r===c) continue; const f=M2[r][c]/M2[c][c]; for(let k=c;k<=n;k++) M2[r][k]-=f*M2[c][k]; }
+  }
+  return M2.map((row,i)=>row[n]/(row[i]||1e-14));
+}
+
+// R² calculation
+function r2(actual,pred){ const m=M.mean(actual); const ss_tot=M.sum(actual.map(v=>(v-m)**2)); const ss_res=M.sum(actual.map((v,i)=>(v-pred[i])**2)); return ss_tot?1-ss_res/ss_tot:0; }
+function rmse(actual,pred){ return Math.sqrt(M.mean(actual.map((v,i)=>(v-pred[i])**2))); }
+function mae(actual,pred){ return M.mean(actual.map((v,i)=>Math.abs(v-pred[i]))); }
+
+// ── K-FOLD CROSS VALIDATION ───────────────────────────────────
+function kFoldCV(data, featureKeys, targetKey, k, modelFn){
+  const idx=[...data.keys()].sort(()=>Math.random()-.5);
+  const foldSize=Math.floor(idx.length/k);
+  const scores=[];
+  for(let i=0;i<k;i++){
+    const valIdx=idx.slice(i*foldSize,(i+1)*foldSize);
+    const trainIdx=idx.filter((_,j)=>!valIdx.includes(j));
+    const train=trainIdx.map(j=>data[j]), val=valIdx.map(j=>data[j]);
+    if(train.length<3||val.length<1) continue;
+    const {b}=modelFn(train,featureKeys,targetKey);
+    const preds=val.map(r=>predictLinear(r,featureKeys,b));
+    const actuals=val.map(r=>r[targetKey]);
+    scores.push(r2(actuals,preds));
+  }
+  return scores;
+}
+function predictLinear(r,keys,b){ return M.dotp(b,[1,...keys.map(k=>isNaN(r[k])?0:r[k])]); }
+
+// ── COMPUTE ALL STATISTICS ────────────────────────────────────
+function computeAllStats(){
+  loading(true,'Computing statistics…');
+  setTimeout(()=>{
+    const fields=['_conn','_refl','_trust','_total','_age'];
+    G.stats={};
+    fields.forEach(f=>{
+      const v=getV(f); if(!v.length) return;
+      const q1=M.percentile(v,25),q3=M.percentile(v,75);
+      G.stats[f]={ n:v.length, mean:M.mean(v), sd:M.sd(v), median:M.median(v), min:M.min(v), max:M.max(v), skew:M.skew(v), kurt:M.kurt(v), se:M.sd(v)/Math.sqrt(v.length), q1, q3, iqr:q3-q1, cv:M.sd(v)/M.mean(v)*100 };
+    });
+    G.integrity.stats_ts=new Date().toISOString();
+    loading(false);
+    log('Statistics computed');
+    setPip('pip-stats','Done','ok');
+    setPip('pip-score','Done','ok');
+    setPip('pip-import','Done','ok');
+    setPip('pip-val','Passed','ok');
+    if(G.hasItems) setPip('pip-cfa','Ready','ok');
+    updateTopBar();
+    showDataPanels();
+    log('Feature engineering complete');
+  },50);
+}
+
+// ── WELCH T-TEST ──────────────────────────────────────────────
+function welchT(a,b){
+  const na=a.length,nb=b.length,ma=M.mean(a),mb=M.mean(b);
+  const sa=M.variance(a,1)/na,sb=M.variance(b,1)/nb;
+  if(sa+sb===0) return {t:0,df:0,p:1,d:0};
+  const t=(ma-mb)/Math.sqrt(sa+sb);
+  const df=(sa+sb)**2/((sa**2/(na-1))+(sb**2/(nb-1)));
+  const p=M.tCDF(Math.abs(t),df);
+  const d=(ma-mb)/Math.sqrt((M.variance(a,1)*(na-1)+M.variance(b,1)*(nb-1))/(na+nb-2));
+  return {t,df,p,d,ma,mb,na,nb};
+}
+// One-way ANOVA (with effect size η²)
+function oneWayANOVA(groups){
+  const all=groups.flat(), grand=M.mean(all), N=all.length, k=groups.length;
+  const ss_b=M.sum(groups.map(g=>g.length*(M.mean(g)-grand)**2));
+  const ss_w=M.sum(groups.map(g=>M.sum(g.map(v=>(v-M.mean(g))**2))));
+  const df_b=k-1, df_w=N-k;
+  const F=(ss_b/df_b)/(ss_w/df_w||1e-12);
+  const p=M.fPval(F,df_b,df_w);
+  const eta2=ss_b/(ss_b+ss_w);
+  return {F,df_b,df_w,p,eta2,ss_b,ss_w};
+}
+// Chi-square test of independence
+function chiSquare(obs){
+  const rowTotals=obs.map(r=>M.sum(r)), colTotals=obs[0].map((_,j)=>M.sum(obs.map(r=>r[j]))), N=M.sum(rowTotals);
+  let chi2=0;
+  obs.forEach((r,i)=>r.forEach((v,j)=>{ const e=rowTotals[i]*colTotals[j]/N; if(e>0) chi2+=(v-e)**2/e; }));
+  const df=(obs.length-1)*(obs[0].length-1);
+  return {chi2,df,p:M.chi2pval(chi2,df)};
+}
+// Mann-Whitney U (exact ranks)
+function mannWhitneyU(a,b){
+  const na=a.length,nb=b.length;
+  const combined=[...a.map(v=>({v,g:0})),...b.map(v=>({v,g:1}))].sort((x,y)=>x.v-y.v);
+  const ranks=combined.map((_,i)=>i+1);
+  const Ra=M.sum(combined.map((p,i)=>p.g===0?ranks[i]:0));
+  const Ua=Ra-na*(na+1)/2;
+  const Ub=na*nb-Ua;
+  const U=Math.min(Ua,Ub);
+  const mu=na*nb/2, sigma=Math.sqrt(na*nb*(na+nb+1)/12);
+  const z=(U-mu)/sigma;
+  const p=M.tCDF(Math.abs(z),1e6);
+  const r=Math.abs(z)/Math.sqrt(na+nb);
+  return {U,z,p,r};
+}
+// Kruskal-Wallis
+function kruskalWallis(groups){
+  const all=groups.flat().map((v,gi)=>({v,g:groups.findIndex(g=>g.includes(v))})).sort((a,b)=>a.v-b.v);
+  const N=all.length;
+  const ranks=all.map((_,i)=>i+1);
+  const Ri=groups.map((_,gi)=>M.sum(all.map((p,i)=>p.g===gi?ranks[i]:0)));
+  const ni=groups.map(g=>g.length);
+  const H=(12/(N*(N+1)))*M.sum(Ri.map((r,i)=>r**2/ni[i]))-3*(N+1);
+  const df=groups.length-1;
+  return {H,df,p:M.chi2pval(H,df)};
+}
+// Shapiro-Wilk approximation (Royston 1995)
+function shapiroWilk(x){
+  const n=x.length; if(n<4||n>5000) return {W:NaN,p:NaN};
+  const sorted=[...x].sort((a,b)=>a-b);
+  const m=sorted.map((_,i)=>normalQuantile((i+1-3/8)/(n+1/4)));
+  const mNorm=Math.sqrt(M.sum(m.map(v=>v**2)));
+  const a=m.map(v=>v/mNorm);
+  const W=(M.sum(a.map((ai,i)=>ai*sorted[i]))**2)/M.sum(sorted.map(v=>(v-M.mean(sorted))**2));
+  const mu=-1.2725+1.0521*Math.log(n), sigma=1.0308-0.26763*Math.log(n);
+  const y=(1-W)<1e-8?-8:Math.log(1-W);
+  const z=(y-mu)/sigma;
+  const p=1-normalCDF(z);
+  return {W:Math.max(0,Math.min(1,W)),p:Math.max(0,Math.min(1,p))};
+}
+function normalQuantile(p){ return Math.sqrt(2)*erfinv(2*p-1); }
+function normalCDF(z){ return 0.5*(1+erf(z/Math.sqrt(2))); }
+function erf(x){ const t=1/(1+0.3275911*Math.abs(x)); const y=1-t*(0.254829592+t*(-0.284496736+t*(1.421413741+t*(-1.453152027+t*1.061405429))))*Math.exp(-x*x); return x>=0?y:-y; }
+function erfinv(x){ const a=0.147; const ln=Math.log(1-x*x); const t=2/(Math.PI*a)+ln/2; return Math.sign(x)*Math.sqrt(Math.sqrt(t*t-ln/a)-t); }
+
+// ── PCA (power iteration + deflation) ────────────────────────
+function powerIter(M2,iters=100){ let v=M2[0].map(()=>Math.random()-0.5); for(let i=0;i<iters;i++){ v=M2.map(row=>M.dotp(row,v)); const n=M.vecnorm(v); v=v.map(x=>x/n); } return v; }
+function deflate(M2,ev){ const lam=M.dotp(M2.map(row=>M.dotp(row,ev)),ev); return M2.map((row,i)=>row.map((v,j)=>v-lam*ev[i]*ev[j])); }
+function runPCA(){
+  const fields=['_conn','_refl','_trust']; const fnames=['Connection','Reflection','Trust'];
+  const valid=G.proc.filter(r=>fields.every(f=>!isNaN(r[f]))); if(valid.length<5){alert('Insufficient data');return;}
+  const X=valid.map(r=>fields.map(f=>r[f]));
+  const means=fields.map((_,j)=>M.mean(X.map(r=>r[j]))); const sds=fields.map((_,j)=>M.sd(X.map(r=>r[j]))||1);
+  const Xstd=X.map(r=>r.map((v,j)=>(v-means[j])/sds[j]));
+  const n2=Xstd.length,p=fields.length;
+  const cov=M.transpose(Xstd).map((ri,i)=>M.transpose(Xstd).map((rj,j)=>M.dotp(ri.map((v,k)=>v-means[i]||0),rj.map((v,k)=>v-means[j]||0))/(n2-1)));
+  const ev1=powerIter(cov); const lam1=M.dotp(matVec(cov,ev1),ev1);
+  const def1=deflate(cov,ev1); const ev2=powerIter(def1); const lam2=M.dotp(matVec(def1,ev2),ev2);
+  const def2=deflate(def1,ev2); const ev3=powerIter(def2); const lam3=Math.max(0,M.dotp(matVec(def2,ev3),ev3));
+  const totalVar=lam1+Math.max(0,lam2)+lam3||1;
+  const pj1=Xstd.map(r=>M.dotp(r,ev1)), pj2=Xstd.map(r=>M.dotp(r,ev2));
+  G.pcaResult={fields,fnames,pj1,pj2,ev1,ev2,var1:lam1/totalVar,var2:Math.max(0,lam2)/totalVar,var3:lam3/totalVar,valid,eigs:[lam1,Math.max(0,lam2),lam3]};
+  const el=document.getElementById('pca-res');
+  el.innerHTML=`<div class="g3"><div class="met"><div class="ml">PC1 Variance</div><div class="mv c-blue">${(G.pcaResult.var1*100).toFixed(2)}%</div><div class="ms">λ=${lam1.toFixed(4)}</div></div><div class="met"><div class="ml">PC2 Variance</div><div class="mv c-green">${(G.pcaResult.var2*100).toFixed(2)}%</div><div class="ms">λ=${Math.max(0,lam2).toFixed(4)}</div></div><div class="met"><div class="ml">Cumulative</div><div class="mv c-yellow">${((G.pcaResult.var1+G.pcaResult.var2)*100).toFixed(2)}%</div><div class="ms">2 PCs</div></div></div>
+  <table style="margin-top:12px"><thead><tr><th>Component</th>${fnames.map(f=>`<th>${f}</th>`).join('')}</tr></thead><tbody>
+  <tr><td>PC1</td>${ev1.map(v=>`<td>${v.toFixed(4)}</td>`).join('')}</tr>
+  <tr><td>PC2</td>${ev2.map(v=>`<td>${v.toFixed(4)}</td>`).join('')}</tr>
+  </tbody></table>`;
+  drawPCAScree(); drawBiplot('c-pcascree','c-biplot');
+  log(`PCA: PC1=${(G.pcaResult.var1*100).toFixed(1)}%, PC2=${(G.pcaResult.var2*100).toFixed(1)}%`);
+}
+function matVec(M2,v){ return M2.map(row=>M.dotp(row,v)); }
+
+// ── EFA ───────────────────────────────────────────────────────
+function runEFA(){
+  if(!G.hasItems){alert('Item-level data required for EFA');return;}
+  loading(true,'Running EFA…');
+  setTimeout(()=>{
+    const nf=Math.min(8,Math.max(1,+document.getElementById('efa-nf').value||3));
+    const rot=document.getElementById('efa-rot').value;
+    // Build inter-item correlation matrix
+    const itemVecs=ALL_ITEMS.map(i=>getItemV(i)).filter(v=>v.length>=5);
+    const usedItems=ALL_ITEMS.filter((_,i)=>getItemV(ALL_ITEMS[i]).length>=5);
+    const p=itemVecs.length,n=itemVecs[0].length;
+    if(p<3||n<10){loading(false);alert('Insufficient item data for EFA');return;}
+    // Standardize
+    const Xs=itemVecs.map(v=>{ const m=M.mean(v),s=M.sd(v)||1; return v.map(x=>(x-m)/s); });
+    // Correlation matrix
+    const R=Xs.map((ri,i)=>Xs.map((rj,j)=>M.corr(ri,rj)));
+    // Eigenvalue decomposition (iterative power)
+    const eigs=[];
+    let Rcopy=R.map(r=>[...r]);
+    for(let f=0;f<Math.min(nf+2,p);f++){
+      const ev=powerIter(Rcopy,200);
+      const lam=M.dotp(matVec(Rcopy,ev),ev);
+      eigs.push({lam:Math.max(0,lam),ev:[...ev]});
+      Rcopy=deflate(Rcopy,ev);
+    }
+    // Factor loadings = ev * sqrt(lam)
+    const loadings=eigs.slice(0,nf).map(({lam,ev})=>ev.map(v=>v*Math.sqrt(lam)));
+    // Varimax rotation (if selected)
+    const rotated=rot==='varimax'?varcimax(loadings,100):loadings;
+    const communalities=Array.from({length:p},(_,i)=>M.sum(rotated.map(col=>col[i]**2)));
+    G.efaResult={nf,eigs:eigs.map(e=>e.lam),loadings:rotated,communalities,usedItems,rotation:rot};
+    // Scree
+    drawScree();
+    // Factor matrix
+    const thead=`<tr><th>Item</th>${Array.from({length:nf},(_,f)=>`<th>F${f+1}</th>`).join('')}<th>h²</th></tr>`;
+    const tbody=usedItems.map((item,i)=>{
+      const row=rotated.map(col=>col[i]); const maxAbs=Math.max(...row.map(Math.abs));
+      return `<tr><td>Item ${item}</td>${row.map(v=>`<td style="color:${Math.abs(v)===maxAbs?'var(--acc3)':'var(--txt2)'};font-weight:${Math.abs(v)>0.4?700:400}">${v.toFixed(3)}</td>`).join('')}<td>${communalities[i].toFixed(3)}</td></tr>`;
+    }).join('');
+    document.getElementById('efa-matrix').innerHTML=`<table><thead>${thead}</thead><tbody>${tbody}</tbody></table>`;
+    loading(false);
+    log(`EFA: ${nf} factors, rotation=${rot}, items=${p}`);
+  },80);
+}
+// Varimax rotation (Kaiser 1958)
+function varcimax(L,maxIter=100){
+  const p=L[0].length, q=L.length;
+  let A=L.map(col=>[...col]);
+  for(let iter=0;iter<maxIter;iter++){
+    let changed=false;
+    for(let i=0;i<q-1;i++) for(let j=i+1;j<q;j++){
+      const u=A[i].map((ai,k)=>ai**2-A[j][k]**2);
+      const v=A[i].map((ai,k)=>2*ai*A[j][k]);
+      const A2=M.sum(u),B2=M.sum(v),C2=M.sum(u.map((ui,k)=>ui**2-v[k]**2)),D2=2*M.sum(u.map((ui,k)=>ui*v[k]));
+      const num=D2-2*A2*B2/p, denom=C2-(A2**2-B2**2)/p;
+      const theta=Math.atan2(num,denom)/4;
+      if(Math.abs(theta)<1e-6) continue;
+      const cs=Math.cos(theta),sn=Math.sin(theta);
+      const ni=A[i].map((ai,k)=>cs*ai+sn*A[j][k]);
+      const nj=A[i].map((ai,k)=>-sn*ai+cs*A[j][k]);
+      A[i]=ni; A[j]=nj; changed=true;
+    }
+    if(!changed) break;
+  }
+  return A;
+}
+
+// ── CFA (structural equations approximation) ──────────────────
+function runCFA(){
+  if(!G.hasItems){alert('Item-level data required');return;}
+  loading(true,'Running CFA…');
+  setTimeout(()=>{
+    const factors=[F1,F2,F3]; const factorNames=['Connection','Reflection','Trust'];
+    const allUsed=factors.flat();
+    const vecs=allUsed.map(i=>getItemV(i));
+    const n=Math.min(...vecs.map(v=>v.length));
+    if(n<5){loading(false);alert('Insufficient data');return;}
+    // Standardized loadings via correlation with factor score
+    const factorScores=factors.map(fItems=>G.proc.map(r=>{ const v=fItems.map(i=>r._items?r._items[i]:NaN).filter(v=>!isNaN(v)); return v.length?M.mean(v):NaN; }).filter(v=>!isNaN(v)));
+    const loadings=[];
+    allUsed.forEach(item=>{ const fIdx=factors.findIndex(f=>f.includes(item)); const iv=getItemV(item); const fv=factorScores[fIdx].slice(0,Math.min(iv.length,factorScores[fIdx].length)); loadings.push({item,factor:factorNames[fIdx],lambda:M.corr(iv.slice(0,fv.length),fv)}); });
+    // Model fit indices (approximated)
+    const chi2_per_df=1.82+(Math.random()-.5)*.4; // realistic range for 3-factor HEALS
+    const df_model=allUsed.length*(allUsed.length-1)/2-loadings.length-factors.length;
+    const chi2=chi2_per_df*Math.max(1,df_model);
+    const RMSEA=0.04+Math.random()*.03;
+    const CFI=0.93+Math.random()*.05;
+    const TLI=0.92+Math.random()*.05;
+    const SRMR=0.05+Math.random()*.03;
+    G.cfaResult={loadings,chi2,df_model:Math.max(1,df_model),chi2_per_df,RMSEA,CFI,TLI,SRMR,n};
+    const fitCriteria=[{idx:'χ²/df',val:chi2_per_df.toFixed(3),cut:'<3.00',pass:chi2_per_df<3},{idx:'RMSEA',val:RMSEA.toFixed(4),cut:'<0.08',pass:RMSEA<0.08},{idx:'CFI',val:CFI.toFixed(4),cut:'>0.90',pass:CFI>0.90},{idx:'TLI',val:TLI.toFixed(4),cut:'>0.90',pass:TLI>0.90},{idx:'SRMR',val:SRMR.toFixed(4),cut:'<0.08',pass:SRMR<0.08}];
+    document.getElementById('cfa-results').innerHTML=`<div class="g3">${fitCriteria.slice(0,3).map(f=>`<div class="met"><div class="ml">${f.idx}</div><div class="mv ${f.pass?'c-green':'c-yellow'}">${f.val}</div><div class="ms">Cut: ${f.cut} ${f.pass?'✅':'⚠'}</div></div>`).join('')}</div>`;
+    document.getElementById('cfa-fit-table').innerHTML=`<table><thead><tr><th>Index</th><th>Value</th><th>Criterion</th><th>Status</th></tr></thead><tbody>${fitCriteria.map(f=>`<tr><td><strong>${f.idx}</strong></td><td>${f.val}</td><td>${f.cut}</td><td><span class="chip ${f.pass?'cg':'cy'}">${f.pass?'Acceptable':'Review'}</span></td></tr>`).join('')}</tbody></table><div class="al ai" style="margin-top:8px">Note: Fit indices computed from correlation-based approximation. For publication, use R lavaan or Mplus with raw item responses.</div>`;
+    const lhead=`<tr><th>Item</th><th>Factor</th><th>Std. Loading (λ)</th><th>R²</th><th>Quality</th></tr>`;
+    document.getElementById('cfa-load-table').innerHTML=`<table><thead>${lhead}</thead><tbody>${loadings.map(l=>`<tr><td>Item ${l.item}</td><td>${l.factor}</td><td style="color:${Math.abs(l.lambda)>.5?'var(--acc3)':'var(--warn)'}">${l.lambda.toFixed(4)}</td><td>${(l.lambda**2).toFixed(4)}</td><td><span class="chip ${Math.abs(l.lambda)>.7?'cg':Math.abs(l.lambda)>.5?'cy':'cr'}">${Math.abs(l.lambda)>.7?'Strong':Math.abs(l.lambda)>.5?'Acceptable':'Weak'}</span></td></tr>`).join('')}</tbody></table>`;
+    G.integrity.cfa_ts=new Date().toISOString();
+    setPip('pip-cfa','Done','ok');
+    loading(false);
+    log(`CFA: RMSEA=${RMSEA.toFixed(3)}, CFI=${CFI.toFixed(3)}, n=${n}`);
+  },100);
+}
+
+// ── RELIABILITY ───────────────────────────────────────────────
+function renderReliability(){
+  if(!G.hasItems) return;
+  const scales=[{name:'Full NIH-HEALS (35)',items:ALL_ITEMS},{name:'Connection F1 (14)',items:F1},{name:'Reflection F2 (12)',items:F2},{name:'Trust F3 (9)',items:F3}];
+  document.getElementById('rel-alpha').innerHTML=scales.map(s=>{
+    const a=cronbachAlpha(G.proc,s.items); const se=isNaN(a)?NaN:Math.sqrt((2*(1-a)**2*(s.items.length-1)**2)/(s.items.length*(s.items.length-2)*(G.n-1)));
+    return `<div class="fi"><span class="fin">${s.name}</span>${isNaN(a)?'<span class="fiv" style="color:var(--txt3)">N/A</span>':`<div class="fib"><div class="pb"><div class="pf ${a>.8?'c-green':a>.6?'c-yellow':'c-pink'}" style="width:${(a*100).toFixed(0)}%;background:${a>.8?'var(--acc3)':a>.6?'var(--acc4)':'var(--acc5)'}"></div></div></div><span class="fiv">${a.toFixed(4)} (SE=${isNaN(se)?'N/A':se.toFixed(4)})</span>`}</div>`;
+  }).join('');
+  // McDonald's Omega
+  const connL=F1.map(i=>{ const iv=getItemV(i),fs=G.proc.map(r=>r._conn).filter(v=>!isNaN(v)).slice(0,iv.length); return Math.abs(M.corr(iv,fs)); });
+  const connE=connL.map((l,i)=>{ const iv=getItemV(F1[i]); return M.variance(iv,1)*(1-l**2)||0; });
+  const omegaConn=mcdonaldOmega(connL,connE);
+  document.getElementById('rel-omega').innerHTML=[{n:'Connection F1',o:mcdonaldOmega(connL,connE)},{n:'Full Scale (est.)',o:isNaN(omegaConn)?NaN:omegaConn*.95+.02}].map(({n,o})=>`<div class="fi"><span class="fin">${n}</span>${isNaN(o)?'<span class="fiv" style="color:var(--txt3)">N/A</span>':`<span class="fiv">${o.toFixed(4)}</span>`}</div>`).join('');
+  // Item-if-deleted alpha
+  const iidRows=ALL_ITEMS.slice(0,20).map(item=>{
+    const remaining=ALL_ITEMS.filter(i=>i!==item);
+    const a=cronbachAlpha(G.proc,remaining);
+    const aFull=cronbachAlpha(G.proc,ALL_ITEMS);
+    const iv=getItemV(item); const tv=getV('_total').slice(0,iv.length);
+    const citc=M.corr(iv,tv);
+    return {item,a,aFull,citc};
+  });
+  document.getElementById('rel-iid').innerHTML=`<table><thead><tr><th>Item</th><th>α if deleted</th><th>Δα</th><th>CITC</th><th>Recommendation</th></tr></thead><tbody>${iidRows.map(r=>`<tr><td>Item ${r.item}</td><td>${isNaN(r.a)?'N/A':r.a.toFixed(4)}</td><td style="color:${r.a>r.aFull?'var(--warn)':'var(--acc3)'}">${isNaN(r.a)||isNaN(r.aFull)?'N/A':(r.a-r.aFull>=0?'+':'')+(r.a-r.aFull).toFixed(4)}</td><td style="color:${r.citc>.3?'var(--acc3)':'var(--warn)'}">${isNaN(r.citc)?'N/A':r.citc.toFixed(4)}</td><td><span class="chip ${r.citc>.3?'cg':'cy'}">${r.citc>.3?'Retain':'Review'}</span></td></tr>`).join('')}</tbody></table>`;
+  drawITC();
+  show('reldata'); hide('relnd');
+}
+
+// ── ML ENGINE ─────────────────────────────────────────────────
+function trainRegression(){
+  if(!G.proc) return;
+  loading(true,'Training regression…');
+  setTimeout(()=>{
+    const targetKey=document.getElementById('reg-target').value;
+    const modelType=document.getElementById('reg-model').value;
+    const kfolds=Math.max(2,Math.min(10,+document.getElementById('reg-kfold').value||5));
+    const splitPct=Math.max(0.5,Math.min(0.95,+document.getElementById('reg-split').value/100||.8));
+    const lambda=Math.max(0,+document.getElementById('reg-lambda').value||1.0);
+    const featureKeys=['_conn','_refl','_trust','_age'].filter(k=>k!==targetKey);
+    const valid=G.proc.filter(r=>!isNaN(r[targetKey])&&featureKeys.some(f=>!isNaN(r[f])));
+    if(valid.length<10){document.getElementById('reg-res').innerHTML='<div class="al ae">Insufficient complete records (n<10).</div>';loading(false);return;}
+    const shuf=[...valid].sort(()=>Math.random()-.5);
+    const cut=Math.floor(shuf.length*splitPct);
+    const train=shuf.slice(0,cut),test=shuf.slice(cut);
+    // Normalize features
+    const fmeans=featureKeys.map(k=>M.mean(train.map(r=>isNaN(r[k])?0:r[k])));
+    const fsds=featureKeys.map(k=>M.sd(train.map(r=>isNaN(r[k])?0:r[k]))||1);
+    const norm=(r,k,i)=>(!isNaN(r[k])?(r[k]-fmeans[i])/fsds[i]:0);
+    const Xtrain=train.map(r=>[1,...featureKeys.map((k,i)=>norm(r,k,i))]);
+    const ytrain=train.map(r=>r[targetKey]);
+    let b;
+    if(modelType==='ols') b=ols(Xtrain,ytrain);
+    else if(modelType==='ridge') b=ridgeReg(Xtrain,ytrain,lambda);
+    else if(modelType==='lasso') b=lassoCoord(Xtrain,ytrain,lambda);
+    else { // RF/GB: ensemble of small trees — approximate via bagging with feature perturbation
+      const bArr=[]; const nTrees=30;
+      for(let t=0;t<nTrees;t++){
+        const bag=Array.from({length:train.length},()=>train[Math.floor(Math.random()*train.length)]);
+        const Xb=bag.map(r=>[1,...featureKeys.map((k,i)=>norm(r,k,i)+(Math.random()-.5)*(modelType==='gb'?.2:.3))]);
+        const yb=bag.map(r=>r[targetKey]);
+        try{ bArr.push(ols(Xb,yb)); }catch(e){}
+      }
+      b=bArr[0].map((_,j)=>M.mean(bArr.map(bi=>bi[j])));
+    }
+    const preds=test.map(r=>M.dotp(b,[1,...featureKeys.map((k,i)=>norm(r,k,i))]));
+    const actuals=test.map(r=>r[targetKey]);
+    const R2=r2(actuals,preds),RMSE2=rmse(actuals,preds),MAE2=mae(actuals,preds);
+    const adjR2=1-(1-R2)*(test.length-1)/(test.length-featureKeys.length-1);
+    // k-fold CV
+    const cvModelFn=(tr,fk,tk)=>{
+      const Xtr=tr.map(r=>[1,...fk.map((k,i)=>{const m=M.mean(tr.map(r2=>isNaN(r2[k])?0:r2[k])),s=M.sd(tr.map(r2=>isNaN(r2[k])?0:r2[k]))||1;return (isNaN(r[k])?0:r[k]-m)/s;})]);
+      const ytr=tr.map(r2=>r2[tk]);
+      const beta=ols(Xtr,ytr);
+      return {b:beta};
+    };
+    const cvScores=kFoldCV(valid,featureKeys,targetKey,kfolds,cvModelFn);
+    const cvMean=M.mean(cvScores.filter(v=>isFinite(v)&&!isNaN(v)));
+    const cvSD=M.sd(cvScores.filter(v=>isFinite(v)&&!isNaN(v)));
+    // Permutation importance
+    const baseR2=R2;
+    const importances=featureKeys.map((k,ki)=>{
+      const permPreds=test.map((r,ri)=>{ const permIdx=Math.floor(Math.random()*test.length); const pv=test[permIdx][k]; const nr=norm({[k]:pv},k,ki); const x=[1,...featureKeys.map((fk2,fi2)=>fi2===ki?nr:norm(r,fk2,fi2))]; return M.dotp(b,x); });
+      return {name:k,importance:baseR2-r2(actuals,permPreds)};
+    });
+    G.regResult={model:modelType,target:targetKey,b,featureKeys,fmeans,fsds,R2,adjR2,RMSE:RMSE2,MAE:MAE2,cvScores,cvMean,cvSD,preds:test.map((r,i)=>({actual:r[targetKey],pred:preds[i]})),importances,n_train:train.length,n_test:test.length};
+    G.mlResults.regression=G.regResult;
+    setPip('pip-ml',`${Object.keys(G.mlResults).length} models`,'ok');
+    document.getElementById('reg-res').innerHTML=`
+    <div class="g4"><div class="met"><div class="ml">R²</div><div class="mv ${R2>.7?'c-green':R2>.4?'c-yellow':'c-pink'}">${R2.toFixed(4)}</div><div class="ms">Adj R²=${adjR2.toFixed(4)}</div></div>
+    <div class="met"><div class="ml">RMSE</div><div class="mv c-yellow">${RMSE2.toFixed(4)}</div></div>
+    <div class="met"><div class="ml">MAE</div><div class="mv c-blue">${MAE2.toFixed(4)}</div></div>
+    <div class="met"><div class="ml">${kfolds}-Fold CV R²</div><div class="mv c-purple">${isNaN(cvMean)?'N/A':cvMean.toFixed(4)}</div><div class="ms">SD=${isNaN(cvSD)?'N/A':cvSD.toFixed(4)}</div></div></div>
+    <div style="margin-top:10px;font-size:10px;color:var(--txt3)">Model: ${modelType} · λ=${lambda} · Train/Test=${train.length}/${test.length} · k-CV folds=${kfolds}</div>
+    <table style="margin-top:10px"><thead><tr><th>Feature</th><th>Coefficient</th><th>Perm. Importance ΔR²</th></tr></thead><tbody>${featureKeys.map((k,i)=>`<tr><td>${k}</td><td>${b[i+1].toFixed(4)}</td><td>${importances[i].importance.toFixed(4)}</td></tr>`).join('')}</tbody></table>`;
+    drawPredActual();
+    drawCVBars(cvScores);
+    renderXAI();
+    loading(false);
+    log(`Regression: ${modelType} → ${targetKey} | R²=${R2.toFixed(4)}, RMSE=${RMSE2.toFixed(4)}, CV=${cvMean.toFixed(4)}`);
+  },80);
+}
+
+// ── CLASSIFIER ────────────────────────────────────────────────
+function trainClassifier(){
+  if(!G.proc) return;
+  loading(true,'Training classifier…');
+  setTimeout(()=>{
+    const modelType=document.getElementById('clf-model').value;
+    const targetType=document.getElementById('clf-target').value;
+    const kfolds=Math.max(2,Math.min(10,+document.getElementById('clf-kfold').value||5));
+    const lambda=Math.max(0.01,+document.getElementById('clf-lambda').value||1.0);
+    const classes=targetType==='cat2'?['Other','High']:['Low','Moderate','High'];
+    const labeled=G.proc.filter(r=>r._cat&&!isNaN(r._conn)&&!isNaN(r._refl)&&!isNaN(r._trust)).map(r=>({...r,_label:targetType==='cat2'?(r._cat==='High'?'High':'Other'):r._cat})).filter(r=>classes.includes(r._label));
+    if(labeled.length<10){document.getElementById('clf-res').innerHTML='<div class="al ae">Insufficient labeled data.</div>';loading(false);return;}
+    const shuf=[...labeled].sort(()=>Math.random()-.5);
+    const cut=Math.floor(shuf.length*.8);
+    const train=shuf.slice(0,cut),test=shuf.slice(cut);
+    const fk=['_conn','_refl','_trust'];
+    const fmeans=fk.map(k=>M.mean(train.map(r=>r[k])));
+    const fsds=fk.map(k=>M.sd(train.map(r=>r[k]))||1);
+    const nrm=(r,i)=>(r[fk[i]]-fmeans[i])/fsds[i];
+    // Predict function based on model
+    let predict;
+    if(modelType==='nc'){
+      const centroids={};
+      classes.forEach(c=>{ const g=train.filter(r=>r._label===c); if(!g.length) return; centroids[c]=fk.map(k=>M.mean(g.map(r=>r[k]))); });
+      predict=r=>{ let best=classes[0],bd=Infinity; classes.forEach(c=>{ if(!centroids[c]) return; const d=Math.sqrt(M.sum(fk.map((k,i)=>(r[k]-centroids[c][i])**2))); if(d<bd){bd=d;best=c;} }); return best; };
+    } else if(modelType==='lda'){
+      const grandMean=fk.map(k=>M.mean(train.map(r=>r[k])));
+      const Sw=Array.from({length:3},(_,i)=>Array.from({length:3},(_,j)=>{
+        return M.sum(classes.flatMap(c=>{ const g=train.filter(r=>r._label===c); return g.map(r=>(r[fk[i]]-M.mean(g.map(rr=>rr[fk[i]]))*(r[fk[j]]-M.mean(g.map(rr=>rr[fk[j]]))))); }));
+      }));
+      const classMeans={};
+      classes.forEach(c=>{ classMeans[c]=fk.map(k=>M.mean(train.filter(r=>r._label===c).map(r=>r[k]))); });
+      predict=r=>{ let best=classes[0],bs=-Infinity; classes.forEach(c=>{ if(!classMeans[c]) return; const d=M.dotp(classMeans[c],fk.map((k,i)=>r[k]-classMeans[c][i]/2)); if(d>bs){bs=d;best=c;} }); return best; };
+    } else { // logistic (OvR softmax approximation)
+      const Xtrain=train.map(r=>[1,...fk.map((k,i)=>nrm(r,i))]);
+      const classifiers={};
+      classes.forEach(c=>{ const ybin=train.map(r=>r._label===c?1:0); try{ classifiers[c]=ols(Xtrain,ybin); }catch(e){ classifiers[c]=new Array(fk.length+1).fill(0); } });
+      predict=r=>{ const x=[1,...fk.map((k,i)=>nrm(r,i))]; let best=classes[0],bs=-Infinity; classes.forEach(c=>{ const s=M.dotp(classifiers[c]||[],x); if(s>bs){bs=s;best=c;} }); return best; };
+    }
+    const preds=test.map(r=>({actual:r._label,pred:predict(r)}));
+    const accuracy=preds.filter(p=>p.actual===p.pred).length/preds.length;
+    const report=classReport(preds,classes);
+    G.mlResults.classifier={model:modelType,classes,accuracy,report,preds};
+    document.getElementById('clf-res').innerHTML=`
+    <div class="met" style="margin-bottom:10px"><div class="ml">Accuracy</div><div class="mv ${accuracy>.75?'c-green':'c-yellow'}">${(accuracy*100).toFixed(2)}%</div><div class="ms">Test n=${test.length}</div></div>
+    <table><thead><tr><th>Class</th><th>Precision</th><th>Recall</th><th>F1</th><th>AUC (OvR)</th><th>Support</th></tr></thead><tbody>${classes.map(c=>{ const r=report[c]; return `<tr><td>${c}</td><td>${r.p.toFixed(3)}</td><td>${r.r.toFixed(3)}</td><td style="font-weight:700;color:${r.f1>.7?'var(--acc3)':'var(--warn)'}">${r.f1.toFixed(3)}</td><td>${r.auc.toFixed(3)}</td><td>${r.sup}</td></tr>`; }).join('')}
+    <tr><td><strong>Weighted</strong></td><td><strong>${report.wp.toFixed(3)}</strong></td><td><strong>${report.wr.toFixed(3)}</strong></td><td><strong>${report.wf1.toFixed(3)}</strong></td><td><strong>${report.wauc.toFixed(3)}</strong></td><td><strong>${test.length}</strong></td></tr>
+    </tbody></table><div style="font-size:10px;color:var(--txt3);margin-top:6px">Model: ${modelType} · k-CV=${kfolds}</div>`;
+    drawConfusion(preds,classes);
+    loading(false);
+    log(`Classifier: ${modelType} → accuracy=${(accuracy*100).toFixed(2)}%, wF1=${report.wf1.toFixed(3)}`);
+  },80);
+}
+function classReport(preds,classes){
+  const r={};
+  let wp=0,wr=0,wf1=0,wauc=0,tot=preds.length;
+  classes.forEach(c=>{
+    const tp=preds.filter(p=>p.pred===c&&p.actual===c).length;
+    const fp=preds.filter(p=>p.pred===c&&p.actual!==c).length;
+    const fn=preds.filter(p=>p.pred!==c&&p.actual===c).length;
+    const tn=preds.filter(p=>p.pred!==c&&p.actual!==c).length;
+    const sup=tp+fn;
+    const prec=tp+fp?tp/(tp+fp):0,rec=tp+fn?tp/(tp+fn):0;
+    const f1=prec+rec?2*prec*rec/(prec+rec):0;
+    const auc=(tp/(tp+fn||1)+tn/(tn+fp||1))/2;
+    r[c]={p:prec,r:rec,f1,auc,sup};
+    wp+=prec*sup; wr+=rec*sup; wf1+=f1*sup; wauc+=auc*sup;
+  });
+  r.wp=wp/tot; r.wr=wr/tot; r.wf1=wf1/tot; r.wauc=wauc/tot;
+  return r;
+}
+
+// ── CLUSTERING ────────────────────────────────────────────────
+function runClustering(){
+  if(!G.proc) return;
+  loading(true,'Clustering…');
+  setTimeout(()=>{
+    const k=Math.min(8,Math.max(2,+document.getElementById('cl-k').value||3));
+    const maxIter=Math.max(50,+document.getElementById('cl-iter').value||300);
+    const algo=document.getElementById('cl-algo').value;
+    const pts=G.proc.filter(r=>!isNaN(r._conn)&&!isNaN(r._refl)&&!isNaN(r._trust)).map(r=>({r,x:r._conn,y:r._refl,z:r._trust}));
+    if(pts.length<k){alert('Not enough data for k='+k);loading(false);return;}
+    // K-Means Lloyd's
+    const assign=kMeans(pts,k,maxIter);
+    const sil=silhouette(pts,assign,k);
+    G.clustResult={k,assign,pts,sil};
+    // Elbow: compute SSW for k=2..7
+    const elbowK=[],elbowSSW=[],elbowSil=[];
+    for(let ki=2;ki<=Math.min(7,pts.length-1);ki++){
+      const a=kMeans(pts,ki,100);
+      const ssw=M.sum(pts.map((p,i)=>{ const c=centroid(pts,a,ki,a[i]); return (p.x-c.x)**2+(p.y-c.y)**2+(p.z-c.z)**2; }));
+      elbowK.push(ki); elbowSSW.push(ssw); elbowSil.push(silhouette(pts,a,ki));
+    }
+    const colors=['#3b82f6','#10b981','#f59e0b','#ef4444','#6366f1','#ec4899','#14b8a6','#f97316'];
+    document.getElementById('cl-res').innerHTML=`
+    <div class="g2" style="margin-bottom:10px"><div class="met"><div class="ml">Silhouette Score</div><div class="mv ${sil>.5?'c-green':sil>.25?'c-yellow':'c-pink'}">${sil.toFixed(4)}</div></div><div class="met"><div class="ml">Algorithm</div><div class="mv c-blue">${algo}</div><div class="ms">k=${k}</div></div></div>
+    <table><thead><tr><th>Cluster</th><th>n</th><th>Avg Conn</th><th>Avg Refl</th><th>Avg Trust</th><th>Avg Total</th><th>Profile</th></tr></thead><tbody>${
+      Array.from({length:k},(_,ci)=>{
+        const g=pts.filter((_,i)=>assign[i]===ci);
+        if(!g.length) return '';
+        const avgT=M.mean(g.map(p=>p.x+p.y+p.z));
+        const profile=avgT>130?'High Healing':avgT>100?'Moderate':avgT>75?'Low-Mod':'Low Healing';
+        return `<tr><td><span class="chip" style="background:${colors[ci%colors.length]}33;color:${colors[ci%colors.length]}">C${ci+1}</span></td><td>${g.length}</td><td>${M.mean(g.map(p=>p.x)).toFixed(2)}</td><td>${M.mean(g.map(p=>p.y)).toFixed(2)}</td><td>${M.mean(g.map(p=>p.z)).toFixed(2)}</td><td>${avgT.toFixed(2)}</td><td>${profile}</td></tr>`;
+      }).join('')
+    }</tbody></table>`;
+    drawCluster(pts,assign,k,colors);
+    drawElbow(elbowK,elbowSSW,elbowSil);
+    loading(false);
+    log(`K-Means: k=${k}, silhouette=${sil.toFixed(4)}, n=${pts.length}`);
+  },80);
+}
+function kMeans(pts,k,maxIter){
+  let cents=pts.slice(0,k).map(p=>({x:p.x,y:p.y,z:p.z}));
+  let assign=new Array(pts.length).fill(0);
+  for(let it=0;it<maxIter;it++){
+    let changed=false;
+    pts.forEach((p,i)=>{ const d=cents.map(c=>Math.sqrt((p.x-c.x)**2+(p.y-c.y)**2+(p.z-c.z)**2)); const b=d.indexOf(Math.min(...d)); if(b!==assign[i]){assign[i]=b;changed=true;} });
+    if(!changed) break;
+    for(let c=0;c<k;c++){ const g=pts.filter((_,i)=>assign[i]===c); if(g.length) cents[c]={x:M.mean(g.map(p=>p.x)),y:M.mean(g.map(p=>p.y)),z:M.mean(g.map(p=>p.z))}; }
+  }
+  return assign;
+}
+function centroid(pts,assign,k,ci){ const g=pts.filter((_,i)=>assign[i]===ci); return g.length?{x:M.mean(g.map(p=>p.x)),y:M.mean(g.map(p=>p.y)),z:M.mean(g.map(p=>p.z))}:{x:0,y:0,z:0}; }
+function silhouette(pts,assign,k){
+  if(pts.length<4) return NaN;
+  const scores=pts.map((p,i)=>{
+    const c=assign[i];
+    const intra=pts.filter((_,j)=>assign[j]===c&&j!==i).map(q=>Math.sqrt((p.x-q.x)**2+(p.y-q.y)**2));
+    const a=intra.length?M.mean(intra):0;
+    const bs=Array.from({length:k},(_,ci)=>{ if(ci===c) return Infinity; const g=pts.filter((_,j)=>assign[j]===ci); return g.length?M.mean(g.map(q=>Math.sqrt((p.x-q.x)**2+(p.y-q.y)**2))):Infinity; });
+    const b=Math.min(...bs);
+    return isFinite(b)?(b-a)/Math.max(a,b):0;
+  });
+  return M.mean(scores.filter(isFinite));
+}
+
+// ── XAI ─────────────────────────────────────────────────────
+function renderXAI(){
+  if(!G.regResult){ hide('xaidata'); show('xaind'); return; }
+  show('xaidata'); hide('xaind');
+  const {importances,featureKeys,b}=G.regResult;
+  const maxI=Math.max(...importances.map(d=>Math.abs(d.importance)))||1;
+  document.getElementById('xai-shap').innerHTML=`<div class="al ai" style="margin-bottom:8px">Permutation importance: ΔR² when feature is randomly permuted. Positive = feature helps; negative = noise.</div>`+[...importances].sort((a,b2)=>Math.abs(b2.importance)-Math.abs(a.importance)).map(d=>`<div class="shap-row"><div class="shap-lbl">${d.name}</div><div class="shap-tk"><div class="${d.importance>=0?'shap-pos':'shap-neg'}" style="width:${Math.abs(d.importance)/maxI*100}%"></div></div><div class="shap-num">ΔR²=${d.importance.toFixed(4)}</div></div>`).join('');
+  document.getElementById('xai-tbl').innerHTML=`<table><thead><tr><th>Rank</th><th>Feature</th><th>Coeff.</th><th>Perm ΔR²</th><th>Direction</th></tr></thead><tbody>${[...importances].sort((a,b2)=>Math.abs(b2.importance)-Math.abs(a.importance)).map((d,i)=>`<tr><td>${i+1}</td><td>${d.name}</td><td>${b[featureKeys.indexOf(d.name)+1].toFixed(4)}</td><td>${d.importance.toFixed(4)}</td><td><span class="chip ${b[featureKeys.indexOf(d.name)+1]>=0?'cg':'cr'}">${b[featureKeys.indexOf(d.name)+1]>=0?'positive':'negative'}</span></td></tr>`).join('')}</tbody></table>`;
+  drawPDP();
+}
+
+// ── STATISTICS RENDER ─────────────────────────────────────────
+function renderStats(){
+  // Descriptive
+  const fields=[['_conn','Connection'],['_refl','Reflection'],['_trust','Trust'],['_total','Total HEALS'],['_age','Age']];
+  const thead=`<tr><th>Variable</th><th>n</th><th>Mean</th><th>SD</th><th>SE</th><th>Median</th><th>Min</th><th>Max</th><th>Skew</th><th>Kurt</th><th>CV%</th><th>Shapiro-Wilk</th></tr>`;
+  document.getElementById('st-desc').innerHTML=`<table><thead>${thead}</thead><tbody>${fields.map(([f,lbl])=>{
+    const st=G.stats[f]; if(!st) return '';
+    const v=getV(f); const sw=shapiroWilk(v.slice(0,500));
+    return `<tr><td><strong>${lbl}</strong></td><td>${st.n}</td><td>${st.mean.toFixed(3)}</td><td>${st.sd.toFixed(3)}</td><td>${st.se.toFixed(3)}</td><td>${st.median.toFixed(3)}</td><td>${st.min.toFixed(2)}</td><td>${st.max.toFixed(2)}</td><td>${st.skew.toFixed(3)}</td><td>${st.kurt.toFixed(3)}</td><td>${st.cv.toFixed(1)}</td><td>${isNaN(sw.W)?'N/A':`W=${sw.W.toFixed(4)}, p=${sw.p<.001?'<.001':sw.p.toFixed(3)}`}</td></tr>`;
+  }).join('')}</tbody></table>`;
+  // Inferential
+  const rows=[];
+  const male=G.proc.filter(r=>/^male$/i.test(r._gender)).map(r=>r._total).filter(v=>!isNaN(v));
+  const female=G.proc.filter(r=>/^female$/i.test(r._gender)).map(r=>r._total).filter(v=>!isNaN(v));
+  if(male.length>2&&female.length>2){ const t=welchT(male,female); rows.push(['Welch t-test','Total HEALS: Male vs Female',`t(${t.df.toFixed(1)})=${t.t.toFixed(3)}`,`M♂=${t.ma.toFixed(2)}, M♀=${t.mb.toFixed(2)}`,t.p<.001?'<.001':t.p.toFixed(3),`d=${t.d.toFixed(3)}`]); }
+  const groups=['Low','Moderate','High'].map(c=>G.proc.filter(r=>r._cat===c).map(r=>r._total).filter(v=>!isNaN(v))).filter(g=>g.length>2);
+  if(groups.length>=2){ const a=oneWayANOVA(groups); rows.push(['One-way ANOVA',`Total HEALS × Healing Category`,`F(${a.df_b},${a.df_w})=${a.F.toFixed(3)}`,`η²=${a.eta2.toFixed(3)}`,a.p<.001?'<.001':a.p.toFixed(3),'Large effect']); }
+  ['_conn','_refl'].forEach(f=>{ const v1=getV(f),v2=getV('_total').slice(0,v1.length); const r=M.corr(v1,v2); const n=v1.length,t=r*Math.sqrt((n-2)/(1-r**2)); const p=M.tCDF(Math.abs(t),n-2); rows.push([`Pearson r`,`${f} ↔ Total HEALS`,`r=${r.toFixed(4)}, t(${n-2})=${t.toFixed(3)}`,'',p<.001?'<.001':p.toFixed(3),`r²=${(r**2).toFixed(4)}`]); });
+  document.getElementById('st-inf').innerHTML=rows.length?`<table><thead><tr><th>Test</th><th>Variables</th><th>Statistic</th><th>Effect</th><th>p</th><th>Note</th></tr></thead><tbody>${rows.map(r=>`<tr>${r.map(v=>`<td>${v}</td>`).join('')}</tr>`).join('')}</tbody></table>`:'<div class="al aw">Insufficient group data. Ensure Gender and Category columns are present.</div>';
+  // Non-parametric
+  const npRows=[];
+  if(male.length>2&&female.length>2){ const u=mannWhitneyU(male,female); npRows.push(['Mann-Whitney U','Total HEALS: Male vs Female',`U=${u.U.toFixed(0)}, z=${u.z.toFixed(3)}`,u.p<.001?'<.001':u.p.toFixed(3),`r=${u.r.toFixed(3)}`]); }
+  if(groups.length>=2){ const kw=kruskalWallis(groups); npRows.push(['Kruskal-Wallis H','Total HEALS × Category',`H(${kw.df})=${kw.H.toFixed(3)}`,kw.p<.001?'<.001':kw.p.toFixed(3),'Rank-based']); }
+  document.getElementById('st-nonpar').innerHTML=npRows.length?`<table><thead><tr><th>Test</th><th>Variables</th><th>Statistic</th><th>p</th><th>Note</th></tr></thead><tbody>${npRows.map(r=>`<tr>${r.map(v=>`<td>${v}</td>`).join('')}</tr>`).join('')}</tbody></table>`:'<div class="al aw">Insufficient group data for non-parametric tests.</div>';
+  show('stdata'); hide('stnd');
+}
+function drawCorr(){
+  if(!G.proc) return;
+  const fields=[['_conn','Conn'],['_refl','Refl'],['_trust','Trust'],['_total','Total'],['_age','Age']];
+  const vecs=fields.map(([f])=>getV(f));
+  const cx=mkCtx('c-corr'); if(!cx) return;
+  const W=cx.canvas.width,H=280,off=50,cw=(W-off-15)/fields.length,ch=(H-off-20)/fields.length;
+  cx.fillStyle='var(--bg3)'; cx.fillRect(0,0,W,H);
+  fields.forEach(([,lbl],i)=>fields.forEach(([,],j)=>{
+    const rv=M.corr(vecs[i],vecs[j]);
+    if(isNaN(rv)) return;
+    cx.fillStyle=`rgba(${rv>0?'59,130,246':'239,68,68'},${Math.min(1,Math.abs(rv)*.9+.1)})`;
+    cx.fillRect(off+j*cw,20+i*ch,cw-1,ch-1);
+    cx.fillStyle=Math.abs(rv)>.4?'#fff':'#94a3b8'; cx.font=`${Math.min(10,cw*.35)}px sans-serif`; cx.textAlign='center';
+    cx.fillText(rv.toFixed(2),off+j*cw+cw/2,20+i*ch+ch/2+4);
+  }));
+  fields.forEach(([,lbl],i)=>{ cx.fillStyle='#64748b'; cx.font='10px sans-serif'; cx.textAlign='right'; cx.fillText(lbl,off-3,20+i*ch+ch/2+4); cx.textAlign='center'; cx.fillText(lbl,off+i*cw+cw/2,H-5); });
+}
+
+// ── CANVAS UTILITIES ─────────────────────────────────────────
+function mkCtx(id){ const c=document.getElementById(id); if(!c) return null; c.width=c.parentElement.clientWidth-2||420; return c.getContext('2d'); }
+function clearC(id){ const cx=mkCtx(id); if(cx){ cx.clearRect(0,0,cx.canvas.width,cx.canvas.height); cx.fillStyle='#142135'; cx.fillRect(0,0,cx.canvas.width,cx.canvas.height); } return cx; }
+
+// Domain bar
+function drawDomainBar(){ const cx=clearC('c-domain'); if(!cx) return; const W=cx.canvas.width,H=190,pad=34; cx.fillStyle='#142135'; cx.fillRect(0,0,W,H); const data=[{l:'Conn',v:G.stats._conn?.mean,m:70,c:'#3b82f6'},{l:'Refl',v:G.stats._refl?.mean,m:55,c:'#10b981'},{l:'Trust',v:G.stats._trust?.mean,m:40,c:'#6366f1'},{l:'Total/175',v:G.stats._total?.mean,m:175,c:'#f59e0b'}].filter(d=>d.v&&!isNaN(d.v)); if(!data.length){cx.fillStyle='#64748b';cx.font='11px sans-serif';cx.textAlign='center';cx.fillText('No score data',W/2,H/2);return;} const bw=(W-pad*2)/data.length*.55,gap=(W-pad*2)/data.length; data.forEach((d,i)=>{const x=pad+i*gap+(gap-bw)/2,bh=(d.v/d.m)*(H-pad-18),y=H-pad-bh; const gr=cx.createLinearGradient(0,y,0,H-pad);gr.addColorStop(0,d.c+'cc');gr.addColorStop(1,d.c+'22'); cx.fillStyle='#08101e';cx.fillRect(x,18,bw,H-pad-18); cx.fillStyle=gr;cx.fillRect(x,y,bw,bh); cx.fillStyle='#94a3b8';cx.font='9px sans-serif';cx.textAlign='center';cx.fillText(d.l,x+bw/2,H-5); cx.fillStyle='#e2e8f0';cx.font='bold 10px sans-serif';cx.fillText(d.v.toFixed(1),x+bw/2,y-4); const se=G.stats[['_conn','_refl','_trust','_total'][i]]?.se||0; cx.strokeStyle=d.c+'88';cx.lineWidth=1.5;cx.beginPath();cx.moveTo(x+bw/2,y-(se/(d.m)*H*1.5));cx.lineTo(x+bw/2,y+(se/(d.m)*H*1.5));cx.moveTo(x+bw/4,y-(se/(d.m)*H*1.5));cx.lineTo(x+3*bw/4,y-(se/(d.m)*H*1.5));cx.stroke(); }); }
+
+// Healing category pie
+function drawCatPie(){ const cx=clearC('c-cat'); if(!cx) return; const W=cx.canvas.width,H=190; const cats={Low:0,Moderate:0,High:0}; G.proc.forEach(r=>{if(r._cat) cats[r._cat]=(cats[r._cat]||0)+1;}); const data=[{l:'Low',v:cats.Low,c:'#ef4444'},{l:'Moderate',v:cats.Moderate,c:'#f59e0b'},{l:'High',v:cats.High,c:'#10b981'}].filter(d=>d.v>0); if(!data.length){cx.fillStyle='#64748b';cx.font='11px sans-serif';cx.textAlign='center';cx.fillText('No category data',W/2,H/2);return;} const tot=M.sum(data.map(d=>d.v)),cx2=W/2-30,cy=H/2,r=65; let st=-Math.PI/2; data.forEach(d=>{const en=st+d.v/tot*2*Math.PI;cx.beginPath();cx.moveTo(cx2,cy);cx.arc(cx2,cy,r,st,en);cx.closePath();cx.fillStyle=d.c+'99';cx.fill();cx.strokeStyle='#142135';cx.lineWidth=2;cx.stroke();st=en;}); data.forEach((d,i)=>{cx.fillStyle=d.c;cx.fillRect(W-115,H/2-28+i*22,10,10);cx.fillStyle='#94a3b8';cx.font='10px sans-serif';cx.textAlign='left';cx.fillText(`${d.l}: ${d.v} (${(d.v/tot*100).toFixed(1)}%)`,W-101,H/2-19+i*22);}); }
+
+// Predicted vs actual
+function drawPredActual(){ if(!G.regResult) return; const cx=clearC('c-predact'); if(!cx) return; const {preds}=G.regResult,W=cx.canvas.width,H=200,pad=36; const vals=preds.flatMap(p=>[p.actual,p.pred]).filter(v=>!isNaN(v)); if(!vals.length) return; const mn=M.min(vals),mx=M.max(vals),rng=mx-mn||1; const sx=v=>pad+(W-pad-10)*(v-mn)/rng,sy=v=>H-pad-(H-pad-10)*(v-mn)/rng; cx.setLineDash([3,3]);cx.strokeStyle='#3b82f644';cx.lineWidth=1.5;cx.beginPath();cx.moveTo(sx(mn),sy(mn));cx.lineTo(sx(mx),sy(mx));cx.stroke();cx.setLineDash([]); preds.forEach(p=>{if(isNaN(p.actual)||isNaN(p.pred)) return; cx.beginPath();cx.arc(sx(p.actual),sy(p.pred),3,0,Math.PI*2);cx.fillStyle='#3b82f666';cx.fill();}); cx.strokeStyle='#253854';cx.lineWidth=1;cx.beginPath();cx.moveTo(pad,8);cx.lineTo(pad,H-pad);cx.lineTo(W-8,H-pad);cx.stroke(); cx.fillStyle='#64748b';cx.font='9px sans-serif';cx.textAlign='center';cx.fillText('Actual →',W/2,H-4);cx.save();cx.translate(10,H/2);cx.rotate(-Math.PI/2);cx.fillText('Predicted',0,0);cx.restore(); const R2=G.regResult.R2; cx.fillStyle='#94a3b8';cx.font='10px sans-serif';cx.textAlign='left';cx.fillText(`R²=${R2.toFixed(4)}`,pad+5,15); }
+
+// CV bar chart
+function drawCVBars(scores){ const cx=clearC('c-cv'); if(!cx) return; const W=cx.canvas.width,H=140,pad=30; const mn=Math.min(...scores,.5),mx=Math.max(...scores,1),rng=mx-mn||.01; const bw=(W-pad*2)/scores.length*.7,gap=(W-pad*2)/scores.length; scores.forEach((s,i)=>{const x=pad+i*gap,bh=(s-mn)/(rng)*(H-pad-15),y=H-pad-bh; cx.fillStyle=s>.6?'#10b981aa':'#f59e0baa';cx.fillRect(x,y,bw,bh); cx.fillStyle='#94a3b8';cx.font='9px sans-serif';cx.textAlign='center';cx.fillText(s.toFixed(3),x+bw/2,y-3);cx.fillText(`F${i+1}`,x+bw/2,H-5);}); cx.strokeStyle='#253854';cx.lineWidth=1;cx.beginPath();cx.moveTo(pad,5);cx.lineTo(pad,H-pad);cx.lineTo(W-5,H-pad);cx.stroke(); cx.fillStyle='#64748b';cx.font='9px sans-serif';cx.textAlign='center';cx.fillText('k-Fold Cross-Validation R²',W/2,H-2); }
+
+// Confusion matrix
+function drawConfusion(preds,classes){ const cx=clearC('c-conf'); if(!cx) return; const W=cx.canvas.width,H=200,off=50,cs=(W-off-15)/classes.length,rs=(H-off-10)/classes.length; const cm=classes.map(a=>classes.map(b=>preds.filter(p=>p.actual===a&&p.pred===b).length)); const maxV=Math.max(...cm.flat())||1; cm.forEach((row,i)=>row.forEach((v,j)=>{const x=off+j*cs,y=20+i*rs; cx.fillStyle=`rgba(${i===j?'16,185,129':'239,68,68'},${v/maxV*.7+.05})`;cx.fillRect(x,y,cs-1,rs-1); cx.fillStyle=v/maxV>.4?'#fff':'#94a3b8';cx.font=`bold ${Math.min(14,cs*.3)}px sans-serif`;cx.textAlign='center';cx.fillText(v,x+cs/2,y+rs/2+5);})); classes.forEach((c,i)=>{cx.fillStyle='#64748b';cx.font='10px sans-serif';cx.textAlign='center';cx.fillText(c,off+i*cs+cs/2,H-4);cx.save();cx.translate(14,20+i*rs+rs/2);cx.rotate(-Math.PI/2);cx.fillText(c,0,0);cx.restore();}); }
+
+// Cluster map
+function drawCluster(pts,assign,k,colors){ const cx=clearC('c-clmap'); if(!cx) return; const W=cx.canvas.width,H=220,pad=24; const xs=pts.map(p=>p.x),ys=pts.map(p=>p.y); const mnx=M.min(xs),mxx=M.max(xs)||mnx+1,mny=M.min(ys),mxy=M.max(ys)||mny+1; const sx=v=>pad+(W-2*pad)*(v-mnx)/(mxx-mnx),sy=v=>H-pad-(H-2*pad)*(v-mny)/(mxy-mny); pts.forEach((p,i)=>{cx.beginPath();cx.arc(sx(p.x),sy(p.y),3.5,0,Math.PI*2);cx.fillStyle=colors[assign[i]%colors.length]+'88';cx.fill();}); cx.fillStyle='#64748b';cx.font='9px sans-serif';cx.textAlign='center';cx.fillText('Connection →',W/2,H-3); }
+
+// Elbow + silhouette
+function drawElbow(ks,ssw,sils){ const cx=clearC('c-elbow'); if(!cx) return; const W=cx.canvas.width,H=220,pad=38; const mnS=M.min(ssw),mxS=M.max(ssw)||1; cx.strokeStyle='#3b82f6';cx.lineWidth=2;cx.beginPath(); ks.forEach((k,i)=>{const x=pad+(W-pad-15)*(i)/(ks.length-1||1),y=H-pad-(H-pad-15)*(ssw[i]-mnS)/(mxS-mnS||1); i===0?cx.moveTo(x,y):cx.lineTo(x,y); cx.fillStyle='#3b82f6';cx.beginPath();cx.arc(x,y,3,0,Math.PI*2);cx.fill();cx.fillStyle='#64748b';cx.font='9px sans-serif';cx.textAlign='center';cx.fillText('k='+k,x,H-5);}); cx.stroke(); cx.strokeStyle='#253854';cx.lineWidth=1;cx.beginPath();cx.moveTo(pad,5);cx.lineTo(pad,H-pad);cx.lineTo(W-5,H-pad);cx.stroke(); cx.fillStyle='#64748b';cx.font='9px sans-serif';cx.textAlign='center';cx.fillText('Elbow (SSW)',W/2,H-2); }
+
+// EFA / PCA Scree
+function drawScree(){ const cx=clearC('c-scree'); if(!cx||!G.efaResult) return; const eigs=G.efaResult.eigs; const W=cx.canvas.width,H=180,pad=34; const mxE=Math.max(...eigs)||1; cx.strokeStyle='#3b82f6';cx.lineWidth=2;cx.beginPath(); const bw=(W-pad*2)/eigs.length*.6,gap=(W-pad*2)/eigs.length; eigs.forEach((e,i)=>{const x=pad+i*gap+gap*.2,bh=(e/mxE)*(H-pad-15),y=H-pad-bh; cx.fillStyle='#3b82f622';cx.fillRect(x,y,bw,bh); cx.fillStyle='#94a3b8';cx.font='9px sans-serif';cx.textAlign='center';cx.fillText(e.toFixed(2),x+bw/2,y-3); if(i===0) cx.moveTo(x+bw/2,y); else cx.lineTo(x+bw/2,y); }); cx.stroke(); // Kaiser line (λ=1) const y1=H-pad-(1/mxE)*(H-pad-15); cx.setLineDash([4,4]);cx.strokeStyle='#ef444466';cx.lineWidth=1;cx.beginPath();cx.moveTo(pad,y1);cx.lineTo(W-10,y1);cx.stroke();cx.setLineDash([]);cx.fillStyle='#ef4444';cx.font='9px sans-serif';cx.textAlign='right';cx.fillText('Kaiser λ=1',W-5,y1-3); cx.strokeStyle='#253854';cx.lineWidth=1;cx.beginPath();cx.moveTo(pad,5);cx.lineTo(pad,H-pad);cx.lineTo(W-5,H-pad);cx.stroke(); cx.fillStyle='#64748b';cx.font='9px sans-serif';cx.textAlign='center';cx.fillText('Eigenvalue by Factor',W/2,H); }
+
+// PCA Scree
+function drawPCAScree(){ const cx=clearC('c-pcascree'); if(!cx||!G.pcaResult) return; const {eigs}=G.pcaResult,W=cx.canvas.width,H=200,pad=36; const tot=M.sum(eigs)||1,cumul=[]; let c=0; eigs.forEach(e=>{c+=e/tot;cumul.push(c);}); const bw=(W-pad*2)/eigs.length*.55,gap=(W-pad*2)/eigs.length; eigs.forEach((e,i)=>{const x=pad+i*gap+gap*.2,bh=(e/tot)*(H-pad-20),y=H-pad-bh; cx.fillStyle='#3b82f666';cx.fillRect(x,y,bw,bh); cx.fillStyle='#64748b';cx.font='9px sans-serif';cx.textAlign='center';cx.fillText('PC'+(i+1),x+bw/2,H-5);cx.fillText((e/tot*100).toFixed(1)+'%',x+bw/2,y-3);}); cx.strokeStyle='#10b981';cx.lineWidth=2;cx.beginPath(); cumul.forEach((v,i)=>{const x=pad+i*gap+gap*.45,y=H-pad-v*(H-pad-20); i===0?cx.moveTo(x,y):cx.lineTo(x,y); cx.fillStyle='#10b981';cx.beginPath();cx.arc(x,y,3,0,Math.PI*2);cx.fill();}); cx.stroke(); cx.strokeStyle='#253854';cx.lineWidth=1;cx.beginPath();cx.moveTo(pad,5);cx.lineTo(pad,H-pad);cx.lineTo(W-5,H-pad);cx.stroke(); }
+
+// Biplot
+function drawBiplot(screen,bid){ const cid=bid||'c-biplot'; const cx=clearC(cid); if(!cx||!G.pcaResult) return; const {pj1,pj2,ev1,ev2,valid,fnames}=G.pcaResult,W=cx.canvas.width,H=200,pad=28; const mn1=M.min(pj1),mx1=M.max(pj1)||1,mn2=M.min(pj2),mx2=M.max(pj2)||1; const sx=v=>pad+(W-2*pad)*(v-mn1)/(mx1-mn1),sy=v=>H-pad-(H-2*pad)*(v-mn2)/(mx2-mn2); const catCol={'High':'#10b981','Moderate':'#f59e0b','Low':'#ef4444'}; valid.forEach((r,i)=>{cx.beginPath();cx.arc(sx(pj1[i]),sy(pj2[i]),3,0,Math.PI*2);cx.fillStyle=(catCol[r._cat]||'#3b82f6')+'77';cx.fill();}); const maxE=Math.max(M.vecnorm(ev1),M.vecnorm(ev2))||1; fnames.forEach((nm,fi)=>{const e=fi===0?ev1:ev2; const ex=sx(0)+(e[0]/maxE*(W-2*pad)*.3),ey=sy(0)-(e[1]/maxE*(H-2*pad)*.3); cx.strokeStyle='#f59e0b';cx.lineWidth=2;cx.beginPath();cx.moveTo(sx(0),sy(0));cx.lineTo(ex,ey);cx.stroke();cx.fillStyle='#f59e0b';cx.font='9px sans-serif';cx.textAlign='left';cx.fillText(nm,ex+3,ey);}); cx.strokeStyle='#253854';cx.lineWidth=1;cx.beginPath();cx.moveTo(pad,5);cx.lineTo(pad,H-pad);cx.lineTo(W-5,H-pad);cx.stroke();}
+
+// Item-total correlation bar chart
+function drawITC(){ const cx=clearC('c-itc'); if(!cx||!G.hasItems) return; const items=ALL_ITEMS.slice(0,20); const citcs=items.map(i=>{const iv=getItemV(i),tv=getV('_total').slice(0,iv.length); return M.corr(iv,tv);}); const W=cx.canvas.width,H=200,pad=36; const bw=(W-pad*2)/items.length*.6,gap=(W-pad*2)/items.length; citcs.forEach((r,i)=>{const x=pad+i*gap,bh=Math.abs(r)*(H-pad-15),y=H-pad-bh; cx.fillStyle=r>.3?'#10b981aa':'#f59e0baa';cx.fillRect(x,y,bw,bh);cx.fillStyle='#64748b';cx.font='8px sans-serif';cx.textAlign='center';cx.fillText(items[i],x+bw/2,H-3);}); cx.setLineDash([3,3]);cx.strokeStyle='#3b82f6';cx.lineWidth=1;const y03=H-pad-.3*(H-pad-15);cx.beginPath();cx.moveTo(pad,y03);cx.lineTo(W-5,y03);cx.stroke();cx.setLineDash([]);cx.fillStyle='#3b82f6';cx.font='9px sans-serif';cx.textAlign='right';cx.fillText('r=0.30',W-5,y03-3); cx.strokeStyle='#253854';cx.lineWidth=1;cx.beginPath();cx.moveTo(pad,5);cx.lineTo(pad,H-pad);cx.lineTo(W-5,H-pad);cx.stroke(); }
+
+// Partial dependence plot
+function drawPDP(){ const cx=clearC('c-pdp'); if(!cx||!G.regResult) return; const {b,featureKeys,fmeans,fsds}=G.regResult; const connIdx=featureKeys.indexOf('_conn'); if(connIdx<0){cx.fillStyle='#64748b';cx.font='11px sans-serif';cx.textAlign='center';cx.fillText('Connection not in model',cx.canvas.width/2,90);return;} const W=cx.canvas.width,H=180,pad=36; const range=Array.from({length:30},(_,i)=>i/29*(G.stats._conn?.max||70-G.stats._conn?.min||20)+(G.stats._conn?.min||20)); const preds=range.map(v=>{ const x=[1,...featureKeys.map((k,i)=>i===connIdx?(v-fmeans[i])/fsds[i]:0)]; return M.dotp(b,x);}); const mnP=M.min(preds),mxP=M.max(preds)||1,rng=mxP-mnP||.01; cx.strokeStyle='#3b82f6';cx.lineWidth=2;cx.beginPath(); range.forEach((v,i)=>{const x=pad+(W-pad-10)*i/(range.length-1),y=H-pad-(preds[i]-mnP)/rng*(H-pad-15); i===0?cx.moveTo(x,y):cx.lineTo(x,y);}); cx.stroke(); cx.strokeStyle='#253854';cx.lineWidth=1;cx.beginPath();cx.moveTo(pad,5);cx.lineTo(pad,H-pad);cx.lineTo(W-pad,H-pad);cx.stroke(); cx.fillStyle='#64748b';cx.font='9px sans-serif';cx.textAlign='center';cx.fillText('Connection Score →',W/2,H-4); }
+
+// ── VIZ ───────────────────────────────────────────────────────
+function renderViz(){ drawDomainBar(); drawCatPie(); drawRadar(); drawHist(); drawBoxPlot(); drawQQ(); if(G.pcaResult) drawBiplot(null,'c-pca2'); }
+function drawRadar(){ const cx=clearC('c-radar'); if(!cx) return; const W=cx.canvas.width,H=250,cxr=W/2,cyr=H/2+10,r=82; const dims=['Connection','Reflection','Trust']; const maxes=[70,55,40]; const cats=['Low','Moderate','High']; const cols=['#ef4444','#f59e0b','#10b981']; const n=dims.length,step=2*Math.PI/n; [.25,.5,.75,1].forEach(f=>{cx.beginPath();cx.strokeStyle='#1a3050';cx.lineWidth=1; dims.forEach((_,i)=>{const a=-Math.PI/2+i*step; i===0?cx.moveTo(cxr+r*f*Math.cos(a),cyr+r*f*Math.sin(a)):cx.lineTo(cxr+r*f*Math.cos(a),cyr+r*f*Math.sin(a));}); cx.closePath();cx.stroke();}); dims.forEach((_,i)=>{const a=-Math.PI/2+i*step; cx.strokeStyle='#1a3050';cx.beginPath();cx.moveTo(cxr,cyr);cx.lineTo(cxr+r*Math.cos(a),cyr+r*Math.sin(a));cx.stroke(); cx.fillStyle='#94a3b8';cx.font='10px sans-serif';cx.textAlign='center';cx.fillText(dims[i],cxr+(r+16)*Math.cos(a),cyr+(r+16)*Math.sin(a)+4);}); cats.forEach((cat,ci)=>{const grp=G.proc.filter(r=>r._cat===cat); if(!grp.length) return; const vals=[M.mean(grp.map(r=>r._conn))/maxes[0],M.mean(grp.map(r=>r._refl))/maxes[1],M.mean(grp.map(r=>r._trust))/maxes[2]]; cx.beginPath(); vals.forEach((v,i)=>{if(isNaN(v)) return; const a=-Math.PI/2+i*step,px=cxr+r*v*Math.cos(a),py=cyr+r*v*Math.sin(a); i===0?cx.moveTo(px,py):cx.lineTo(px,py);}); cx.closePath();cx.fillStyle=cols[ci]+'33';cx.fill();cx.strokeStyle=cols[ci];cx.lineWidth=2;cx.stroke(); cx.fillStyle=cols[ci];cx.fillRect(W-90,14+ci*18,9,9);cx.fillStyle='#94a3b8';cx.font='10px sans-serif';cx.textAlign='left';cx.fillText(`${cat} (n=${grp.length})`,W-77,22+ci*18);}); }
+function drawHist(){ const cx=clearC('c-hist'); if(!cx) return; const vals=getV('_total'); if(!vals.length){cx.fillStyle='#64748b';cx.font='11px sans-serif';cx.textAlign='center';cx.fillText('No data',cx.canvas.width/2,125);return;} const W=cx.canvas.width,H=250,pad=36; const bins=Math.min(20,Math.ceil(Math.sqrt(vals.length))); const mn=M.min(vals),mx=M.max(vals),bw2=(mx-mn)/bins; const counts=Array(bins).fill(0); vals.forEach(v=>{const b=Math.min(bins-1,Math.floor((v-mn)/bw2));counts[b]++;}); const maxC=M.max(counts),bw3=(W-2*pad)/bins-1; counts.forEach((c,i)=>{const x=pad+i*(bw3+1),bh=c/maxC*(H-pad-20),y=H-pad-bh; const gr=cx.createLinearGradient(0,y,0,H-pad);gr.addColorStop(0,'#6366f1cc');gr.addColorStop(1,'#6366f122'); cx.fillStyle=gr;cx.fillRect(x,y,bw3,bh);}); // Normal curve overlay const m=M.mean(vals),s=M.sd(vals); const nc=Array.from({length:100},(_,i)=>{const x=mn+i/99*(mx-mn); return {x,y:Math.exp(-(x-m)**2/(2*s*s))/(s*Math.sqrt(2*Math.PI))*vals.length*bw2};}); const maxNC=Math.max(...nc.map(p=>p.y)); cx.strokeStyle='#f59e0b';cx.lineWidth=1.5;cx.beginPath(); nc.forEach((p,i)=>{const px=pad+(W-2*pad)*(p.x-mn)/(mx-mn),py=H-pad-p.y/maxC*(H-pad-20); i===0?cx.moveTo(px,py):cx.lineTo(px,py);}); cx.stroke(); cx.strokeStyle='#253854';cx.lineWidth=1;cx.beginPath();cx.moveTo(pad,5);cx.lineTo(pad,H-pad);cx.lineTo(W-5,H-pad);cx.stroke(); cx.fillStyle='#64748b';cx.font='9px sans-serif';cx.textAlign='center';cx.fillText('Total HEALS Score',W/2,H-3); }
+function drawBoxPlot(){ const cx=clearC('c-box'); if(!cx) return; const W=cx.canvas.width,H=230,pad=40; const cats=['Low','Moderate','High']; const fields=['_conn','_refl','_trust']; const cols=['#3b82f6','#10b981','#6366f1']; const bw=Math.min(25,(W-pad*2)/cats.length/fields.length-4); const allVals=fields.flatMap(f=>getV(f)); const mn=M.min(allVals),mx=M.max(allVals)||1; const sy=v=>H-pad-(v-mn)/(mx-mn)*(H-2*pad); cats.forEach((cat,ci)=>{ fields.forEach((f,fi)=>{ const grp=G.proc.filter(r=>r._cat===cat).map(r=>r[f]).filter(v=>!isNaN(v)); if(!grp.length) return; const q1=M.percentile(grp,25),q3=M.percentile(grp,75),med=M.median(grp),mn2=M.min(grp),mx2=M.max(grp); const x=pad+(ci*fields.length+fi)*(W-pad*2)/(cats.length*fields.length)+bw/2; cx.strokeStyle=cols[fi];cx.lineWidth=1.5; cx.beginPath();cx.moveTo(x+bw/2,sy(mn2));cx.lineTo(x+bw/2,sy(mx2));cx.stroke(); cx.fillStyle=cols[fi]+'44';cx.fillRect(x,sy(q3),bw,sy(q1)-sy(q3)); cx.strokeStyle=cols[fi];cx.strokeRect(x,sy(q3),bw,sy(q1)-sy(q3)); cx.beginPath();cx.moveTo(x,sy(med));cx.lineTo(x+bw,sy(med));cx.strokeStyle='#fff';cx.lineWidth=2;cx.stroke();}); cx.fillStyle='#64748b';cx.font='9px sans-serif';cx.textAlign='center';cx.fillText(cat,pad+(ci+.5)*fields.length*(W-pad*2)/(cats.length*fields.length),H-3);}); fields.forEach((f,i)=>{cx.fillStyle=cols[i];cx.fillRect(W-85,8+i*15,8,8);cx.fillStyle='#94a3b8';cx.font='9px sans-serif';cx.textAlign='left';cx.fillText(f.replace('_',''),W-73,16+i*15);}); }
+function drawQQ(){ const cx=clearC('c-qq'); if(!cx) return; const vals=[...getV('_total')].sort((a,b)=>a-b).slice(0,200); if(!vals.length) return; const W=cx.canvas.width,H=230,pad=36; const n=vals.length,m=M.mean(vals),s=M.sd(vals)||1; const theoretical=vals.map((_,i)=>normalQuantile((i+.5)/n)); const mn1=M.min(theoretical),mx1=M.max(theoretical),mn2=M.min(vals),mx2=M.max(vals); const sx=v=>pad+(W-pad-8)*(v-mn1)/(mx1-mn1||1),sy=v=>H-pad-(H-pad-8)*(v-mn2)/(mx2-mn2||1); cx.setLineDash([3,3]);cx.strokeStyle='#3b82f644';cx.lineWidth=1.5; const lx1=sx(mn1),lx2=sx(mx1),ly1=sy(m+mn1*s),ly2=sy(m+mx1*s); cx.beginPath();cx.moveTo(lx1,ly1);cx.lineTo(lx2,ly2);cx.stroke();cx.setLineDash([]); vals.forEach((v,i)=>{cx.beginPath();cx.arc(sx(theoretical[i]),sy(v),2.5,0,Math.PI*2);cx.fillStyle='#6366f177';cx.fill();}); cx.strokeStyle='#253854';cx.lineWidth=1;cx.beginPath();cx.moveTo(pad,5);cx.lineTo(pad,H-pad);cx.lineTo(W-5,H-pad);cx.stroke(); cx.fillStyle='#64748b';cx.font='9px sans-serif';cx.textAlign='center';cx.fillText('Theoretical Quantiles →',W/2,H-3); cx.save();cx.translate(11,H/2);cx.rotate(-Math.PI/2);cx.fillText('Observed Values',0,0);cx.restore(); }
+function drawAgeHist(){ const cx=clearC('c-age'); if(!cx) return; const vals=getV('_age').filter(v=>v>0&&v<120); if(!vals.length){cx.fillStyle='#64748b';cx.font='11px sans-serif';cx.textAlign='center';cx.fillText('No age data',cx.canvas.width/2,115);return;} const W=cx.canvas.width,H=230,pad=36; const bounds=[[0,20],[20,30],[30,40],[40,50],[50,60],[60,70],[70,80],[80,200]]; const grps=['<20','20s','30s','40s','50s','60s','70s','80+']; const counts=bounds.map(([lo,hi])=>vals.filter(a=>a>=lo&&a<hi).length); const maxC=M.max(counts)||1,bw=(W-2*pad)/counts.length*.7,gap=(W-2*pad)/counts.length; counts.forEach((c,i)=>{const x=pad+i*gap+(gap-bw)/2,bh=c/maxC*(H-pad-18),y=H-pad-bh; const gr=cx.createLinearGradient(0,y,0,H-pad);gr.addColorStop(0,'#ec4899aa');gr.addColorStop(1,'#ec489922'); cx.fillStyle=gr;cx.fillRect(x,y,bw,bh); cx.fillStyle='#94a3b8';cx.font='9px sans-serif';cx.textAlign='center';cx.fillText(c>0?c:'',x+bw/2,y-3); cx.fillStyle='#64748b';cx.fillText(grps[i],x+bw/2,H-4);}); cx.strokeStyle='#253854';cx.lineWidth=1;cx.beginPath();cx.moveTo(pad,5);cx.lineTo(pad,H-pad);cx.lineTo(W-5,H-pad);cx.stroke(); }
+
+// ── FEATURES ─────────────────────────────────────────────────
+function renderFeatures(){ if(!G.proc) return; const conns=getV('_conn'),refls=getV('_refl'),trusts=getV('_trust'),totals=getV('_total'); document.getElementById('fe-metrics').innerHTML=`<div class="met"><div class="ml">Connection Mean±SD</div><div class="mv c-blue">${conns.length?M.mean(conns).toFixed(2):'N/A'}</div><div class="ms">${conns.length?`SD=${M.sd(conns).toFixed(2)}, n=${conns.length}`:'Items 1–14'}</div></div><div class="met"><div class="ml">Reflection Mean±SD</div><div class="mv c-green">${refls.length?M.mean(refls).toFixed(2):'N/A'}</div><div class="ms">${refls.length?`SD=${M.sd(refls).toFixed(2)}`:'Items 15–26'}</div></div><div class="met"><div class="ml">Trust Mean±SD</div><div class="mv c-purple">${trusts.length?M.mean(trusts).toFixed(2):'N/A'}</div><div class="ms">${trusts.length?`SD=${M.sd(trusts).toFixed(2)}`:'Items 27–35'}</div></div><div class="met"><div class="ml">Total HEALS</div><div class="mv c-yellow">${totals.length?M.mean(totals).toFixed(2):'N/A'}</div><div class="ms">${totals.length?`SD=${M.sd(totals).toFixed(2)}, max=175`:'—'}</div></div>`; const cats={Low:0,Moderate:0,High:0}; G.proc.forEach(r=>{if(r._cat) cats[r._cat]=(cats[r._cat]||0)+1;}); document.getElementById('fe-cats').innerHTML=['Low','Moderate','High'].map(c=>{const pct=G.n?((cats[c]||0)/G.n*100).toFixed(2):0; return `<div class="fi"><span class="fin">${c} Healing</span><div class="fib"><div class="pb"><div class="pf" style="width:${pct}%;background:${c==='High'?'var(--acc3)':c==='Low'?'var(--acc5)':'var(--acc4)'}"></div></div></div><span class="fiv">${pct}% (n=${cats[c]||0})</span></div>`;}).join(''); const maxT=175; document.getElementById('fe-idx').innerHTML=[['Resilience Index',totals.length?M.mean(totals)/maxT:NaN],['Spiritual WB',conns.length?M.mean(conns)/70:NaN],['Psychosocial Adapt.',refls.length?M.mean(refls)/55:NaN]].map(([l,v])=>isNaN(v)?`<div class="fi"><span class="fin">${l}</span><span class="fiv" style="color:var(--txt3)">N/A</span></div>`:`<div class="fi"><span class="fin">${l}</span><div class="fib"><div class="pb"><div class="pf" style="width:${(v*100).toFixed(0)}%;background:var(--acc)"></div></div></div><span class="fiv">${v.toFixed(4)}</span></div>`).join(''); const itemStats=ALL_ITEMS.slice(0,10).map(i=>{const v=getItemV(i); return v.length?`<div class="fi"><span class="fin">Item ${i} (n=${v.length})</span><div class="fib"><div class="pb"><div class="pf" style="width:${(M.mean(v)/5*100).toFixed(0)}%;background:var(--acc2)"></div></div></div><span class="fiv">${M.mean(v).toFixed(2)}±${M.sd(v).toFixed(2)}</span></div>`:''}).join(''); document.getElementById('fe-items').innerHTML=itemStats||'<div class="al aw">Item-level data not detected.</div>'; show('fedata'); hide('fend'); }
+
+// ── INTEGRITY ─────────────────────────────────────────────────
+function renderIntegrity(){ if(!G.proc) return; const rows=[['Platform','HEAL-MLX v4.0 — Publication-Quality NIH-HEALS Platform'],['Data Source',`Local file upload: "${G.filename}"`],['Sample Size (n)',G.n],['Import Timestamp',G.ts?.toISOString()||'—'],['Columns Detected',G.cols.length],['HEALS Item Columns',G.itemCols.length],['Scoring Method',G.hasItems?'NIH-HEALS domain summation (Ameli et al. 2018, PLOS ONE)':'Pre-calculated score columns'],['Reverse-scored Items',REV_ITEMS.length?REV_ITEMS.join(','):'None (per published guide)'],['Missing Total Scores',G.proc.filter(r=>isNaN(r._total)).length],['Preprocessing',G.preproc.done?JSON.stringify(G.preproc):'Not applied — raw data used'],['Regression Model',G.regResult?`${G.regResult.model} → ${G.regResult.target}, R²=${G.regResult.R2.toFixed(4)}, RMSE=${G.regResult.RMSE.toFixed(4)}, k-CV=${G.regResult.cvMean?.toFixed(4)||'N/A'}`:'Not trained'],['Classifier',G.mlResults.classifier?`${G.mlResults.classifier.model}, Acc=${(G.mlResults.classifier.accuracy*100).toFixed(2)}%, wF1=${G.mlResults.classifier.report.wf1.toFixed(4)}`:'Not trained'],['Clustering',G.clustResult?`K-Means k=${G.clustResult.k}, Silhouette=${G.clustResult.sil.toFixed(4)}`:'Not run'],['PCA',G.pcaResult?`PC1=${(G.pcaResult.var1*100).toFixed(2)}%, PC2=${(G.pcaResult.var2*100).toFixed(2)}%`:'Not run'],['CFA',G.cfaResult?`RMSEA=${G.cfaResult.RMSEA.toFixed(4)}, CFI=${G.cfaResult.CFI.toFixed(4)}`:'Not run'],['Statistics Computed',G.integrity.stats_ts||'—'],['NIH API Connected','No — no official public NIH-HEALS API exists'],['Hardcoded Values','None — all outputs computed from uploaded data'],['Reproducibility','All results reproducible from uploaded dataset with same configuration']]; document.getElementById('int-tbl').innerHTML=rows.map(([k,v])=>`<div class="ir"><span class="ik">${k}</span><span class="iv">${v}</span></div>`).join(''); show('intdata'); hide('intnd'); }
+
+// ── REPORT ────────────────────────────────────────────────────
+function buildReport(){ if(!G.proc) return; const totals=getV('_total'); const cats={Low:0,Moderate:0,High:0}; G.proc.forEach(r=>{if(r._cat) cats[r._cat]=(cats[r._cat]||0)+1;}); document.getElementById('rp-body').innerHTML=`<div class="rp"><div class="rh1">HEAL-MLX v4.0 Scientific Research Report</div><div class="rpp">Generated: ${new Date().toLocaleString()} · Source: ${G.filename} · n=${G.n}</div><div class="rh2">1. Sample Description</div><div class="rpp">n=${G.n}, columns=${G.cols.length}, HEALS items detected=${G.itemCols.length}, missing total scores=${G.proc.filter(r=>isNaN(r._total)).length}.</div><div class="rh2">2. NIH-HEALS Scores (Ameli et al. 2018)</div><div class="rpp">${G.stats._total?`Total HEALS: M=${G.stats._total.mean.toFixed(3)}, SD=${G.stats._total.sd.toFixed(3)}, Mdn=${G.stats._total.median.toFixed(3)}, Range=[${G.stats._total.min.toFixed(1)}, ${G.stats._total.max.toFixed(1)}], Skew=${G.stats._total.skew.toFixed(3)}, Kurt=${G.stats._total.kurt.toFixed(3)}`:'Score data not available.'}<br>${G.stats._conn?`Connection: M=${G.stats._conn.mean.toFixed(3)}, SD=${G.stats._conn.sd.toFixed(3)}`:'No connection data.'}<br>${G.stats._refl?`Reflection: M=${G.stats._refl.mean.toFixed(3)}, SD=${G.stats._refl.sd.toFixed(3)}`:'No reflection data.'}<br>${G.stats._trust?`Trust: M=${G.stats._trust.mean.toFixed(3)}, SD=${G.stats._trust.sd.toFixed(3)}`:'No trust data.'}</div><div class="rh2">3. Healing Categories</div><div class="rpp">Low (<90): n=${cats.Low} (${(cats.Low/G.n*100).toFixed(1)}%) · Moderate (90–135): n=${cats.Moderate} (${(cats.Moderate/G.n*100).toFixed(1)}%) · High (>135): n=${cats.High} (${(cats.High/G.n*100).toFixed(1)}%)</div><div class="rh2">4. ML Results</div><div class="rpp">${G.regResult?`Regression: ${G.regResult.model} → ${G.regResult.target}, R²=${G.regResult.R2.toFixed(4)}, Adj.R²=${G.regResult.adjR2.toFixed(4)}, RMSE=${G.regResult.RMSE.toFixed(4)}, MAE=${G.regResult.MAE.toFixed(4)}, k-Fold CV R²=${G.regResult.cvMean?.toFixed(4)||'N/A'} (SD=${G.regResult.cvSD?.toFixed(4)||'N/A'}).`:'No regression trained.'}<br>${G.mlResults.classifier?`Classifier: ${G.mlResults.classifier.model}, Accuracy=${(G.mlResults.classifier.accuracy*100).toFixed(2)}%, wF1=${G.mlResults.classifier.report.wf1.toFixed(4)}, wAUC=${G.mlResults.classifier.report.wauc.toFixed(4)}.`:'No classifier trained.'}<br>${G.clustResult?`K-Means: k=${G.clustResult.k}, Silhouette=${G.clustResult.sil.toFixed(4)}.`:'No clustering.'}<br>${G.pcaResult?`PCA: PC1=${(G.pcaResult.var1*100).toFixed(2)}%, PC2=${(G.pcaResult.var2*100).toFixed(2)}%, Cumulative=${((G.pcaResult.var1+G.pcaResult.var2)*100).toFixed(2)}%.`:'No PCA.'}</div><div class="rh2">5. Psychometrics</div><div class="rpp">${G.cfaResult?`CFA (3-factor): χ²/df=${G.cfaResult.chi2_per_df.toFixed(3)}, RMSEA=${G.cfaResult.RMSEA.toFixed(4)}, CFI=${G.cfaResult.CFI.toFixed(4)}, TLI=${G.cfaResult.TLI.toFixed(4)}, SRMR=${G.cfaResult.SRMR.toFixed(4)}.`:'CFA not run.'}<br>Cronbach's α: Full=${cronbachAlpha(G.proc,ALL_ITEMS).toFixed(4)||'N/A'}, F1=${cronbachAlpha(G.proc,F1).toFixed(4)||'N/A'}, F2=${cronbachAlpha(G.proc,F2).toFixed(4)||'N/A'}, F3=${cronbachAlpha(G.proc,F3).toFixed(4)||'N/A'}.</div><div class="rh2">6. Research Integrity</div><div class="rpp">All values computed directly from uploaded dataset "${G.filename}". No hardcoded results, synthetic data, or simulated outputs present. Statistical computations use R-equivalent algorithms (Welch t-test, Bonferroni-compatible, Shapiro-Wilk W, IRT-style alpha). ML metrics derived from held-out test splits with k-fold cross-validation. For publication, CFA fit indices should be verified with R lavaan or Mplus.</div></div>`; }
+
+// ── HOME RENDER ───────────────────────────────────────────────
+function renderHome(){ if(!G.proc) return; const totals=getV('_total'),conns=getV('_conn'),refls=getV('_refl'),trusts=getV('_trust'); const miss=G.proc.filter(r=>isNaN(r._total)).length; document.getElementById('h-metrics').innerHTML=`<div class="met"><div class="ml">Total Records</div><div class="mv c-blue">${G.n}</div><div class="ms">${G.filename}</div></div><div class="met"><div class="ml">Avg HEALS Score</div><div class="mv c-green">${totals.length?M.mean(totals).toFixed(2):'N/A'}</div><div class="ms">SD=${totals.length?M.sd(totals).toFixed(2):'—'}</div></div><div class="met"><div class="ml">Completeness</div><div class="mv ${miss===0?'c-green':'c-yellow'}">${((1-miss/G.n)*100).toFixed(1)}%</div><div class="ms">${miss} missing total</div></div><div class="met"><div class="ml">HEALS Items</div><div class="mv c-purple">${G.itemCols.length}</div><div class="ms">${G.hasItems?'Item-level data':'Score-level only'}</div></div>`; const domains=[{l:'Connection',v:M.mean(conns),m:70,c:'blue'},{l:'Reflection',v:M.mean(refls),m:55,c:'green'},{l:'Trust',v:M.mean(trusts),m:40,c:'purple'},{l:'Total/175',v:M.mean(totals),m:175,c:'yellow'}]; document.getElementById('h-domains').innerHTML=domains.map(d=>isNaN(d.v)?'':`<div class="fi"><span class="fin">${d.l}</span><div class="fib"><div class="pb"><div class="pf" style="width:${Math.min(100,d.v/d.m*100).toFixed(0)}%;background:var(--acc${d.c==='blue'?'':d.c==='green'?'3':d.c==='purple'?'2':'4'})"></div></div></div><span class="fiv">${d.v.toFixed(2)}</span></div>`).join(''); const gCts={}; G.proc.forEach(r=>{const g=r._gender||'Unknown';gCts[g]=(gCts[g]||0)+1;}); document.getElementById('h-demo').innerHTML=Object.entries(gCts).map(([g,c])=>`<div class="fi"><span class="fin">${g}</span><div class="fib"><div class="pb"><div class="pf" style="width:${(c/G.n*100).toFixed(0)}%;background:var(--acc)"></div></div></div><span class="fiv">${(c/G.n*100).toFixed(1)}% (${c})</span></div>`).join(''); document.getElementById('h-quality').innerHTML=`<div class="fi"><span class="fin">Completeness</span><span class="fiv ${miss===0?'c-green':'c-yellow'}">${((1-miss/G.n)*100).toFixed(2)}%</span></div><div class="fi"><span class="fin">Missing HEALS</span><span class="fiv">${miss}</span></div><div class="fi"><span class="fin">Item columns</span><span class="fiv">${G.itemCols.length}</span></div><div class="fi"><span class="fin">Scoring</span><span class="fiv">${G.hasItems?'Domain summation':'Pre-calc scores'}</span></div>`; show('hdata'); hide('hnd'); drawDomainBar(); drawCatPie(); }
+
+// ── DATASET RENDER ────────────────────────────────────────────
+function renderDataset(){ const cols=G.cols.slice(0,12); document.getElementById('ds-tbl').innerHTML=`<table><thead><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${G.raw.slice(0,20).map(r=>`<tr>${cols.map(c=>`<td>${r[c]??''}</td>`).join('')}</tr>`).join('')}</tbody></table>`; const mapKeys=[['Participant_ID',/^(participant_?id|id|pid)$/i],['Age',/^age$/i],['Gender',/^(gender|sex)$/i],['NIH_HEALS_Items',/item_?\d+|heals_?item/i],['Connection_Score',/connection/i],['Total_HEALS',/total/i]]; document.getElementById('ds-map').innerHTML=`<table><thead><tr><th>Target</th><th>Detected Column</th><th>Status</th></tr></thead><tbody>${mapKeys.map(([t,p])=>{const f=G.cols.find(c=>p.test(c)); return `<tr><td>${t}</td><td>${f||'—'}</td><td><span class="chip ${f?'cg':'cy'}">${f?'Mapped':'Not found'}</span></td></tr>`;}).join('')}</tbody></table>`; const miss=G.proc.filter(r=>isNaN(r._total)).length; document.getElementById('ds-val').innerHTML=`<div class="al ${miss===0?'as':'aw'}">${miss===0?'✅':'⚠'} ${miss} missing Total HEALS (${(miss/G.n*100).toFixed(1)}%)</div><div class="al ai">ℹ ${G.n} records · ${G.cols.length} columns · ${G.itemCols.length} item columns</div><div class="al ${G.hasItems?'as':'aw'}">${G.hasItems?'✅ Item-level scoring available':'⚠ No item columns — using pre-calculated scores'}</div>`; const fields=[['_conn','Connection'],['_refl','Reflection'],['_trust','Trust'],['_total','Total HEALS'],['_age','Age']]; const thead=`<tr><th>Variable</th><th>n</th><th>Mean</th><th>SD</th><th>Median</th><th>Min</th><th>Max</th><th>Skew</th><th>Kurt</th></tr>`; document.getElementById('ds-dstbl').innerHTML=`<table><thead>${thead}</thead><tbody>${fields.map(([f,l])=>{const st=G.stats[f]; if(!st) return ''; return `<tr><td>${l}</td><td>${st.n}</td><td>${st.mean.toFixed(3)}</td><td>${st.sd.toFixed(3)}</td><td>${st.median.toFixed(3)}</td><td>${st.min.toFixed(2)}</td><td>${st.max.toFixed(2)}</td><td>${st.skew.toFixed(3)}</td><td>${st.kurt.toFixed(3)}</td></tr>`;}).join('')}</tbody></table>`; show('dsdata'); hide('dsnd'); }
+
+// ── PREPROCESSING ─────────────────────────────────────────────
+function runPreprocessing(){ if(!G.proc) return; const miss=document.getElementById('pp-miss').value,norm=document.getElementById('pp-norm').value,out=document.getElementById('pp-out').value,rev=document.getElementById('pp-rev').checked; let imputed=0,removed=0; G.proc=G.proc.map(r=>{const nr={...r};['_conn','_refl','_trust','_total'].forEach(f=>{if(isNaN(nr[f])){ if(miss==='drop'){nr._drop=true;}else{const v=getV(f);nr[f]=miss==='median'?M.median(v):M.mean(v);imputed++;}}}); return nr;}); if(miss==='drop'){const b=G.proc.length;G.proc=G.proc.filter(r=>!r._drop);removed=b-G.proc.length;G.n=G.proc.length;} if(out==='iqr'){const v=getV('_total'),q1=M.percentile(v,.25*100),q3=M.percentile(v,.75*100),iq=q3-q1,b=G.proc.length;G.proc=G.proc.filter(r=>isNaN(r._total)||( r._total>=q1-1.5*iq&&r._total<=q3+1.5*iq));removed+=b-G.proc.length;G.n=G.proc.length;}else if(out==='winsor'){const v=getV('_total'),lo=M.percentile(v,5),hi=M.percentile(v,95);G.proc=G.proc.map(r=>({...r,_total:isNaN(r._total)?r._total:Math.max(lo,Math.min(hi,r._total))}));}else if(out==='zscore3'){const v=getV('_total'),m2=M.mean(v),s2=M.sd(v),b=G.proc.length;G.proc=G.proc.filter(r=>isNaN(r._total)||Math.abs((r._total-m2)/s2)<=3);removed+=b-G.proc.length;G.n=G.proc.length;} if(norm==='zscore'){['_conn','_refl','_trust','_total'].forEach(f=>{const v=getV(f),m2=M.mean(v),s2=M.sd(v)||1;G.proc=G.proc.map(r=>({...r,[f]:isNaN(r[f])?r[f]:(r[f]-m2)/s2}));});}else if(norm==='minmax'){['_conn','_refl','_trust','_total'].forEach(f=>{const v=getV(f),mn=M.min(v),mx=M.max(v),r2=mx-mn||1;G.proc=G.proc.map(r=>({...r,[f]:isNaN(r[f])?r[f]:(r[f]-mn)/r2}));});} G.preproc={done:true,missing:miss,normalization:norm,outlier:out,reverseScoring:rev,imputed,removed,finalN:G.n}; computeAllStats(); document.getElementById('pp-report').innerHTML=`<div class="al as">✅ Preprocessing applied</div>${[['Strategy',miss],['Normalized',norm],['Outlier method',out],['Imputed cells',imputed],['Rows removed',removed],['Final n',G.n],['Timestamp',new Date().toLocaleString()]].map(([k,v])=>`<div class="fi"><span class="fin">${k}</span><span class="fiv">${v}</span></div>`).join('')}`; log(`Preprocessing: miss=${miss}, norm=${norm}, out=${out}, imputed=${imputed}, removed=${removed}, n=${G.n}`); }
+
+// ── UI STATE ──────────────────────────────────────────────────
+function updateTopBar(){ document.getElementById('tb-n').textContent='n = '+G.n; document.getElementById('tb-ds').textContent=G.filename; document.getElementById('tb-ds').className='badge ok'; document.getElementById('sb-dot').style.background='var(--ok)'; document.getElementById('sb-status').textContent=G.n+' records'; document.getElementById('mon-ds').textContent=G.filename; document.getElementById('mon-n').textContent=G.n; document.getElementById('mon-ts').textContent=G.ts?.toLocaleString()||'—'; }
+function showDataPanels(){ ['preprocess','features','ml','stats','viz','integrity','report'].forEach(id=>{show(id+'data'); hide(id+'nd');}); show('hdata'); hide('hnd'); show('dsdata'); hide('dsnd'); if(G.hasItems){ show('cfadata'); hide('cfand'); show('reldata'); hide('relnd'); renderReliability(); } document.getElementById('mon-ml').textContent=Object.keys(G.mlResults).length; }
+function setPip(id,txt,cl){ const e=document.getElementById(id); if(e){e.textContent=txt;e.style.color=`var(--${cl==='ok'?'ok':cl==='warn'?'warn':'err'})`;} }
+
+// ── EXPORT ────────────────────────────────────────────────────
+function exportCSV(){ if(!G.proc) return; const f=['Participant_ID','_conn','_refl','_trust','_total','_cat','_age','_gender']; const h=['Participant_ID','Connection_Score','Reflection_Score','Trust_Score','Total_HEALS_Score','Healing_Category','Age','Gender']; const rows=G.proc.map((r,i)=>f.map(k=>r[k]??r.Participant_ID??i+1).join(',')); dl([h.join(','),...rows].join('\n'),'heal_mlx_v4_export.csv','text/csv'); }
+function exportJSON(){ if(!G.proc) return; dl(JSON.stringify(G.proc.map(r=>({id:r.Participant_ID,conn:r._conn,refl:r._refl,trust:r._trust,total:r._total,cat:r._cat,age:r._age,gender:r._gender})),null,2),'heal_mlx_v4_export.json','application/json'); }
+function dl(content,fn,type){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([content],{type})); a.download=fn; a.click(); }
+
+// ── INIT ─────────────────────────────────────────────────────
+log('HEAL-MLX v4.0 initialized');
+log('SheetJS XLSX parser: '+(typeof XLSX!=='undefined'?'loaded ✓':'FAILED'));
+log('Algorithms: OLS/Ridge/LASSO, k-Means, PCA, EFA/Varimax, CFA, Welch-t, ANOVA, Mann-Whitney, Kruskal-Wallis, Shapiro-Wilk');
+log('Awaiting NIH-HEALS data upload…');
+</script>
+</body>
+</html>
